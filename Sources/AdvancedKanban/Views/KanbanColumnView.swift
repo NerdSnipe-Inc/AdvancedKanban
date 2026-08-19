@@ -3,6 +3,9 @@ import SwiftUI
 public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHeader: View, CardGesture: Gesture>: View {
     @Environment(\.kanbanTheme) private var theme
 
+    @State private var moveModeCardID: Column.Card.ID?
+    @FocusState private var focusedCardID: Column.Card.ID?
+
     let column: Column
     let allColumns: [Column]
     let draggedCardID: Column.Card.ID?
@@ -107,6 +110,51 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                                 }
                             }
                         }
+                        .focusable()
+                        .focused($focusedCardID, equals: card.id)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: theme.cardCornerRadius)
+                                .strokeBorder(theme.wipLimitWarningColor, lineWidth: moveModeCardID == card.id ? 2 : 0)
+                        )
+                        .onKeyPress(.space) {
+                            toggleMoveMode(for: card.id)
+                            return .handled
+                        }
+                        .onKeyPress(.return) {
+                            if moveModeCardID == card.id {
+                                moveModeCardID = nil
+                                return .handled
+                            }
+                            toggleMoveMode(for: card.id)
+                            return .handled
+                        }
+                        .onKeyPress(.escape) {
+                            guard moveModeCardID == card.id else { return .ignored }
+                            moveModeCardID = nil
+                            return .handled
+                        }
+                        .onKeyPress(.upArrow) {
+                            guard moveModeCardID == card.id, index > 0 else { return .ignored }
+                            moveCard(card.id, column.id, index - 1)
+                            return .handled
+                        }
+                        .onKeyPress(.downArrow) {
+                            guard moveModeCardID == card.id, index < column.cards.count - 1 else { return .ignored }
+                            moveCard(card.id, column.id, index + 1)
+                            return .handled
+                        }
+                        .onKeyPress(.leftArrow) {
+                            guard moveModeCardID == card.id, let previousColumn = column(before: column) else { return .ignored }
+                            moveCard(card.id, previousColumn.id, previousColumn.cards.count)
+                            moveModeCardID = nil
+                            return .handled
+                        }
+                        .onKeyPress(.rightArrow) {
+                            guard moveModeCardID == card.id, let nextColumn = column(after: column) else { return .ignored }
+                            moveCard(card.id, nextColumn.id, nextColumn.cards.count)
+                            moveModeCardID = nil
+                            return .handled
+                        }
                     }
                 }
             }
@@ -128,6 +176,20 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
 
     private func accessibilityTitle(for column: Column) -> String {
         "column \(String(describing: column.id))"
+    }
+
+    private func toggleMoveMode(for cardID: Column.Card.ID) {
+        moveModeCardID = (moveModeCardID == cardID) ? nil : cardID
+    }
+
+    private func column(before target: Column) -> Column? {
+        guard let index = allColumns.firstIndex(where: { $0.id == target.id }), index > 0 else { return nil }
+        return allColumns[index - 1]
+    }
+
+    private func column(after target: Column) -> Column? {
+        guard let index = allColumns.firstIndex(where: { $0.id == target.id }), index < allColumns.count - 1 else { return nil }
+        return allColumns[index + 1]
     }
 
     /// Keeps an empty column a valid, reachable drop target — without this,
