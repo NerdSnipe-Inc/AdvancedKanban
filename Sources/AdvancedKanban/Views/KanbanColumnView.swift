@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHeader: View>: View {
+public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHeader: View, CardGesture: Gesture>: View {
     @Environment(\.kanbanTheme) private var theme
 
     let column: Column
@@ -9,7 +9,7 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
     let onToggleCollapse: () -> Void
     @ViewBuilder let cardContent: (Column.Card) -> CardContent
     @ViewBuilder let columnHeader: (Column) -> ColumnHeader
-    let cardGesture: (Column.Card) -> AnyGesture<Void>
+    let cardGesture: (Column.Card) -> CardGesture
 
     public init(
         column: Column,
@@ -18,7 +18,7 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
         onToggleCollapse: @escaping () -> Void,
         @ViewBuilder cardContent: @escaping (Column.Card) -> CardContent,
         @ViewBuilder columnHeader: @escaping (Column) -> ColumnHeader,
-        cardGesture: @escaping (Column.Card) -> AnyGesture<Void>
+        cardGesture: @escaping (Column.Card) -> CardGesture
     ) {
         self.column = column
         self.draggedCardID = draggedCardID
