@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AdvancedKanban — a Kanban board for SwiftUI</title>
+<meta name="description" content="A fully customizable Kanban board for SwiftUI on iOS, iPadOS, and macOS. Pointer drag, full keyboard, and VoiceOver reordering with real input parity. No wrapper types, MIT licensed." />
+<meta name="theme-color" content="#6366f1" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav>
+  <div class="inner">
+    <a class="nav-brand" href="./">Advanced<span>Kanban</span></a>
+    <div class="nav-links">
+      <a class="nav-link active" href="./">Overview</a>
+      <a class="nav-link" href="theming.html">Theming</a>
+      <a class="nav-link" href="accessibility.html">Accessibility</a>
+      <a class="nav-link" href="persistence.html">Persistence</a>
+      <a class="nav-link" href="examples.html">Examples</a>
+      <a class="nav-link" href="https://github.com/NerdSnipe-Inc/AdvancedKanban" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<div class="container">
+
+  <section class="hero">
+    <div class="badge"><span class="badge-dot"></span>MIT Licensed · Swift Package Manager</div>
+    <h1>A Kanban board that<br><span class="accent">acts like a native control.</span></h1>
+    <p class="hero-sub">
+      Conform two of your own types, hand it a binding, and you have a
+      drag-and-drop board with a full keyboard move-mode and VoiceOver
+      parity — not just pointer drag with accessibility bolted on after.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" href="#quickstart">Get started →</a>
+      <a class="btn btn-secondary btn-lg" href="https://github.com/NerdSnipe-Inc/AdvancedKanban" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+
+    <div class="hero-board" aria-hidden="true">
+      <div class="hb-col">
+        <div class="hb-col-head"><span>Backlog</span><span class="hb-count">2</span></div>
+        <div class="hb-card">Design onboarding flow<span class="hb-tag med">Medium</span></div>
+        <div class="hb-card">Research competitor apps<span class="hb-tag low">Low</span></div>
+      </div>
+      <div class="hb-col">
+        <div class="hb-col-head"><span>In Progress</span><span class="hb-count over">3/3</span></div>
+        <div class="hb-card dragging">Build KanbanBoard view<span class="hb-tag high">High</span></div>
+        <div class="hb-card">Wire keyboard move-mode<span class="hb-tag med">Medium</span></div>
+        <div class="hb-card">Add VoiceOver actions<span class="hb-tag med">Medium</span></div>
+      </div>
+      <div class="hb-col">
+        <div class="hb-col-head"><span>Review</span><span class="hb-count">1</span></div>
+        <div class="hb-card ghost-slot">&nbsp;</div>
+        <div class="hb-card">Ship 1.0.0<span class="hb-tag low">Low</span></div>
+      </div>
+      <div class="hb-col">
+        <div class="hb-col-head"><span>Done</span><span class="hb-count">1</span></div>
+        <div class="hb-card">Set up SPM package<span class="hb-tag low">Low</span></div>
+      </div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-item"><div class="stat-value">0</div><div class="stat-label">Dependencies</div></div>
+      <div class="stat-item"><div class="stat-value"><span>31</span></div><div class="stat-label">Passing Tests</div></div>
+      <div class="stat-item"><div class="stat-value">3</div><div class="stat-label">Input Methods</div></div>
+      <div class="stat-item"><div class="stat-value">iOS 17+</div><div class="stat-label">macOS 14+</div></div>
+      <div class="stat-item"><div class="stat-value">MIT</div><div class="stat-label">License</div></div>
+    </div>
+  </section>
+
+</div>
+
+<hr class="divider" />
+
+<div class="container">
+  <section class="section" id="why">
+    <p class="section-label">Why</p>
+    <h2>Every existing SwiftUI Kanban is pointer-only.</h2>
+    <p class="section-sub">That's the gap this fills. Keyboard and VoiceOver users aren't an afterthought bolted onto a drag gesture — they call the exact same move-resolution function pointer drag does, so behavior can't quietly diverge between input methods.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">No wrapper types</div>
+        <div class="card-body">Conform your existing card and column structs to <code>KanbanCard</code> / <code>KanbanColumn</code>. No board-model type to keep in sync with your real data — the board drives reordering directly on your <code>Binding&lt;[Column]&gt;</code>.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Content is entirely yours</div>
+        <div class="card-body">AdvancedKanban renders card and column <em>chrome</em> — background, border, corner radius, drag/WIP-warning state. What's inside a card is your own <code>@ViewBuilder</code>, so it never fights a fixed schema.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Real WIP limits</div>
+        <div class="card-body">Set <code>wipLimit</code> per column, choose <code>.warnOnly</code> or <code>.preventDrop</code>, and it's enforced identically whether the move came from a mouse, a keyboard, or VoiceOver.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Native on macOS, not ported</div>
+        <div class="card-body">Hover feedback, a grab cursor, and a drag-activation threshold tuned for a pointer instead of a finger. Built to be embedded in a real Mac app, not just to compile for one.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<hr class="divider" />
+
+<div class="container">
+  <section class="section" id="quickstart">
+    <p class="section-label">Quickstart</p>
+    <h2>Add a board in three steps.</h2>
+    <p class="section-sub">This is the whole integration — no configuration file, no board-state class to instantiate first.</p>
+
+    <ol class="steps">
+      <li>
+        <h3>Conform your card type to <code>KanbanCard</code></h3>
+        <p>It only needs <code>Identifiable</code> and <code>Equatable</code> — most model types already qualify.</p>
+        <pre><span class="kw">import</span> AdvancedKanban
+
+<span class="kw">struct</span> <span class="type">Task</span>: <span class="type">KanbanCard</span> {
+    <span class="kw">let</span> id: <span class="type">UUID</span>
+    <span class="kw">var</span> title: <span class="type">String</span>
+}</pre>
+      </li>
+      <li>
+        <h3>Conform your column type to <code>KanbanColumn</code></h3>
+        <p><code>cards</code> order <em>is</em> the board's display order — no separate sort index. <code>wipLimit</code> is optional; <code>isCollapsed</code> is a plain stored property the board toggles on tap.</p>
+        <pre><span class="kw">struct</span> <span class="type">Stage</span>: <span class="type">KanbanColumn</span> {
+    <span class="kw">let</span> id: <span class="type">UUID</span>
+    <span class="kw">var</span> name: <span class="type">String</span>
+    <span class="kw">var</span> cards: [<span class="type">Task</span>] = []
+    <span class="kw">var</span> wipLimit: <span class="type">Int</span>? = <span class="kw">nil</span>
+    <span class="kw">var</span> isCollapsed: <span class="type">Bool</span> = <span class="kw">false</span>
+}</pre>
+      </li>
+      <li>
+        <h3>Call <code>KanbanBoard</code></h3>
+        <p>Give it a binding and two view builders. That's a complete, draggable, keyboard- and VoiceOver-accessible board.</p>
+        <pre><span class="kw">import</span> SwiftUI
+<span class="kw">import</span> AdvancedKanban
+
+<span class="kw">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="kw">@State</span> <span class="kw">private</span> <span class="kw">var</span> columns: [<span class="type">Stage</span>] = [
+        <span class="type">Stage</span>(id: <span class="type">UUID</span>(), name: <span class="str">"To Do"</span>, cards: [<span class="type">Task</span>(id: <span class="type">UUID</span>(), title: <span class="str">"Write README"</span>)]),
+        <span class="type">Stage</span>(id: <span class="type">UUID</span>(), name: <span class="str">"In Progress"</span>, wipLimit: <span class="fn">3</span>),
+        <span class="type">Stage</span>(id: <span class="type">UUID</span>(), name: <span class="str">"Done"</span>),
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">KanbanBoard</span>(
+            columns: <span class="prop">$columns</span>,
+            wipLimitBehavior: .preventDrop,
+            onMove: { move <span class="kw">in</span>
+                <span class="cm">// persist however you like — SwiftData, a network call, analytics</span>
+            },
+            columnTitle: { <span class="prop">$0</span>.name },   <span class="cm">// real names in VoiceOver's "Move to <Column>"</span>
+            cardContent: { task <span class="kw">in</span>
+                <span class="type">Text</span>(task.title).padding(<span class="fn">8</span>)
+            },
+            columnHeader: { stage <span class="kw">in</span>
+                <span class="type">Text</span>(stage.name).font(.headline)
+            }
+        )
+    }
+}</pre>
+      </li>
+    </ol>
+
+    <div class="callout">
+      <span class="callout-label">How onMove works</span>
+      <p><code>onMove</code> fires <em>after</em> the board has already mutated your <code>columns</code> binding — it's purely a persistence hook. You never diff arrays yourself; the board did the mutation, the closure just tells you what happened.</p>
+    </div>
+  </section>
+</div>
+
+<hr class="divider" />
+
+<div class="container">
+  <section class="section" id="api">
+    <p class="section-label">Reference</p>
+    <h2><code>KanbanBoard</code> initializer</h2>
+    <p class="section-sub">Every parameter, in order.</p>
+
+    <table class="api-table">
+      <tr><th>Parameter</th><th>Type</th><th>What it does</th></tr>
+      <tr><td>columns</td><td>Binding&lt;[Column]&gt;</td><td>Your data. The board mutates it directly on drop.</td></tr>
+      <tr><td>wipLimitBehavior</td><td>WIPLimitBehavior</td><td><code>.warnOnly</code> (default) or <code>.preventDrop</code>.</td></tr>
+      <tr><td>onMove</td><td>((KanbanMove) -&gt; Void)?</td><td>Fires after mutation — your persistence hook.</td></tr>
+      <tr><td>columnTitle</td><td>((Column) -&gt; String)?</td><td>Optional. Gives VoiceOver a real column name instead of the raw id.</td></tr>
+      <tr><td>cardContent</td><td>@ViewBuilder (Card) -&gt; some View</td><td>Required. What's inside a card.</td></tr>
+      <tr><td>columnHeader</td><td>@ViewBuilder (Column) -&gt; some View</td><td>Required. What's inside a column's header.</td></tr>
+    </table>
+
+    <p>See <a href="theming.html">Theming</a> for <code>KanbanTheme</code>, <a href="accessibility.html">Accessibility</a> for the full keyboard and VoiceOver model, and <a href="persistence.html">Persistence</a> for the optional SwiftData adapter.</p>
+  </section>
+</div>
+
+<div class="cta-band">
+  <h2>Read the design spec.</h2>
+  <p>Every architectural decision — why the drag engine isn't built on <code>Transferable</code>, how the keyboard/VoiceOver/pointer paths share one code path, the theming boundary — is written down.</p>
+  <a class="btn btn-primary btn-lg" href="https://github.com/NerdSnipe-Inc/AdvancedKanban/blob/master/docs/superpowers/specs/2026-08-19-advanced-kanban-design.md" target="_blank" rel="noopener">Read the design spec →</a>
+</div>
+
+</main>
+
+<footer>
+  <p>
+    Built by <a href="https://github.com/NerdSnipe-Inc" target="_blank" rel="noopener">NerdSnipe Inc</a> ·
+    AdvancedKanban is MIT licensed ·
+    Questions? <a href="mailto:nerdsnipe.inc@gmail.com">nerdsnipe.inc@gmail.com</a>
+  </p>
+</footer>
+
+</body>
+</html>

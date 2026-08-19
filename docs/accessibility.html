@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Accessibility — AdvancedKanban</title>
+<meta name="description" content="Keyboard move-mode and VoiceOver reordering in AdvancedKanban — every interaction pointer drag supports, without a mouse." />
+<meta name="theme-color" content="#6366f1" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav>
+  <div class="inner">
+    <a class="nav-brand" href="./">Advanced<span>Kanban</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="./">Overview</a>
+      <a class="nav-link" href="theming.html">Theming</a>
+      <a class="nav-link active" href="accessibility.html">Accessibility</a>
+      <a class="nav-link" href="persistence.html">Persistence</a>
+      <a class="nav-link" href="examples.html">Examples</a>
+      <a class="nav-link" href="https://github.com/NerdSnipe-Inc/AdvancedKanban" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<div class="container">
+  <section class="section" style="padding-top:56px">
+    <p class="section-label">Guide</p>
+    <h2>Accessibility</h2>
+    <p class="section-sub">Pointer drag, keyboard move-mode, and VoiceOver all call the same move-resolution function. This page is what that guarantees, concretely.</p>
+
+    <div class="callout">
+      <span class="callout-label">Why this matters</span>
+      <p>Most SwiftUI Kanban implementations are pointer-drag-only. A keyboard or VoiceOver user simply can't reorder a card. AdvancedKanban routes every input method through one shared function — <code>KanbanMoveResolver.resolve</code> — so a card moved by drag, by arrow key, or by a VoiceOver rotor action can never behave differently. This works out of the box; there's no accessibility mode to opt into.</p>
+    </div>
+
+    <h3>Keyboard move-mode</h3>
+    <p>Every card is focusable. No mouse required, start to finish:</p>
+    <table class="api-table">
+      <tr><th>Key</th><th>Effect</th></tr>
+      <tr><td>Tab</td><td>Move focus between cards.</td></tr>
+      <tr><td>Space / Return</td><td>Enter move mode on the focused card (highlighted).</td></tr>
+      <tr><td>↑ / ↓</td><td>Move the card up or down within its column.</td></tr>
+      <tr><td>← / →</td><td>Move the card into the previous / next column.</td></tr>
+      <tr><td>Return</td><td>Commit and exit move mode.</td></tr>
+      <tr><td>Escape</td><td>Cancel — the card returns to exactly where it started.</td></tr>
+    </table>
+    <p>Move mode's origin position is stashed the moment you enter it, so Escape is a real undo, not just "stop moving" — if you've already nudged the card three slots down and change your mind, Escape puts it back at slot zero.</p>
+
+    <h3>VoiceOver</h3>
+    <p>Each card exposes a value and a set of custom rotor actions:</p>
+    <pre><span class="cm">// Announced on focus:</span>
+<span class="str">"2 of 5 in In Progress"</span>
+
+<span class="cm">// Available actions (via the rotor):</span>
+<span class="str">"Move Up"</span>
+<span class="str">"Move Down"</span>
+<span class="str">"Move to Backlog"</span>
+<span class="str">"Move to Review"</span>
+<span class="str">"Move to Done"</span>   <span class="cm">// one per other column</span></pre>
+    <p>"Move Up" and "Move Down" are real no-ops at the ends of a column — they don't wrap around or error, they just don't fire past the boundary. "Move to &lt;Column&gt;" is generated once per <em>other</em> column, so a card never gets an action to move into the column it's already in.</p>
+
+    <div class="callout warn">
+      <span class="callout-label">Give VoiceOver a real column name</span>
+      <p>Without it, <code>KanbanBoard</code> falls back to describing a column by its raw <code>id</code> — readable if your id is a short string, unreadable if it's a <code>UUID</code>. Pass <code>columnTitle</code> in the initializer so "Move to &lt;Column&gt;" says something a person would actually say:</p>
+      <pre><span class="type">KanbanBoard</span>(
+    columns: <span class="prop">$columns</span>,
+    columnTitle: { <span class="prop">$0</span>.name },  <span class="cm">// "Move to In Progress", not "Move to column 5B2F..."</span>
+    <span class="cm">// ...</span>
+)</pre>
+    </div>
+
+    <h3>WIP limits are enforced identically everywhere</h3>
+    <p>If a column's <code>wipLimit</code> would be exceeded and <code>wipLimitBehavior</code> is <code>.preventDrop</code>, the drop is rejected for pointer drag, keyboard move-mode, and VoiceOver alike — the limit isn't a pointer-only guardrail that a keyboard user could silently bypass.</p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <p>
+    Built by <a href="https://github.com/NerdSnipe-Inc" target="_blank" rel="noopener">NerdSnipe Inc</a> ·
+    AdvancedKanban is MIT licensed ·
+    Questions? <a href="mailto:nerdsnipe.inc@gmail.com">nerdsnipe.inc@gmail.com</a>
+  </p>
+</footer>
+
+</body>
+</html>

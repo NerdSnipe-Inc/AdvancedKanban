@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Persistence — AdvancedKanban</title>
+<meta name="description" content="AdvancedKanban is persistence-agnostic by default. AdvancedKanbanSwiftData is an optional companion module for SwiftData-backed apps." />
+<meta name="theme-color" content="#6366f1" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav>
+  <div class="inner">
+    <a class="nav-brand" href="./">Advanced<span>Kanban</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="./">Overview</a>
+      <a class="nav-link" href="theming.html">Theming</a>
+      <a class="nav-link" href="accessibility.html">Accessibility</a>
+      <a class="nav-link active" href="persistence.html">Persistence</a>
+      <a class="nav-link" href="examples.html">Examples</a>
+      <a class="nav-link" href="https://github.com/NerdSnipe-Inc/AdvancedKanban" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<div class="container">
+  <section class="section" style="padding-top:56px">
+    <p class="section-label">Guide</p>
+    <h2>Persistence</h2>
+    <p class="section-sub">The core package never assumes a storage layer. If you want SwiftData wired up for you, there's a separate product for that.</p>
+
+    <h3>The default: you own storage</h3>
+    <p><code>AdvancedKanban</code> (the core product) has zero third-party dependencies and doesn't import SwiftData, Core Data, or anything else. <code>KanbanBoard</code>'s <code>onMove</code> closure hands you a <code>KanbanMove</code> value — <code>cardID</code>, <code>sourceColumnID</code>, <code>sourceIndex</code>, <code>destinationColumnID</code>, <code>destinationIndex</code> — after the board has already applied the change to your in-memory <code>columns</code> binding. What you do with that value is entirely yours: write it to Core Data, send it to a server, log it, ignore it.</p>
+
+    <h3>The optional adapter</h3>
+    <p><code>AdvancedKanbanSwiftData</code> is a second SPM product in the same package. It's never linked unless you explicitly add it — importing <code>AdvancedKanban</code> alone never pulls in SwiftData.</p>
+    <pre>.package(url: <span class="str">"https://github.com/NerdSnipe-Inc/AdvancedKanban.git"</span>, from: <span class="str">"1.0.0"</span>)
+
+<span class="cm">// in your target's dependencies:</span>
+.product(name: <span class="str">"AdvancedKanban"</span>, package: <span class="str">"AdvancedKanban"</span>),
+.product(name: <span class="str">"AdvancedKanbanSwiftData"</span>, package: <span class="str">"AdvancedKanban"</span>),  <span class="cm">// optional</span></pre>
+
+    <p>It ships two ready-made <code>@Model</code> types that already conform to the core protocols, plus a store that applies a move in one call:</p>
+    <table class="api-table">
+      <tr><th>Type</th><th>What it is</th></tr>
+      <tr><td>SwiftDataKanbanCard</td><td><code>@Model</code>, conforms to <code>KanbanCard</code>. <code>id: UUID</code>, <code>title: String</code>, <code>sortIndex: Int</code>.</td></tr>
+      <tr><td>SwiftDataKanbanColumn</td><td><code>@Model</code>, conforms to <code>KanbanColumn</code>. <code>id: UUID</code>, <code>title: String</code>, <code>wipLimit: Int?</code>, <code>isCollapsed: Bool</code>. <code>cards</code> is a computed property over its cascade-deleting relationship, sorted by <code>sortIndex</code>.</td></tr>
+      <tr><td>KanbanStore</td><td>Wraps a <code>ModelContext</code>. <code>apply(_ move: KanbanMove&lt;UUID, UUID&gt;) throws</code> reassigns the moved card's column, renumbers every card in the destination column, and saves.</td></tr>
+    </table>
+
+    <h3>Wiring it up</h3>
+    <pre><span class="kw">import</span> SwiftData
+<span class="kw">import</span> AdvancedKanban
+<span class="kw">import</span> AdvancedKanbanSwiftData
+
+<span class="type">KanbanBoard</span>(
+    columns: <span class="prop">$columns</span>,
+    onMove: { move <span class="kw">in</span>
+        <span class="kw">try?</span> store.apply(move)   <span class="cm">// store: KanbanStore, built from your ModelContext</span>
+    },
+    <span class="cm">// ...</span>
+)</pre>
+
+    <div class="callout warn">
+      <span class="callout-label">Why onMove, not automatic persistence</span>
+      <p>The board mutates your local <code>columns</code> binding immediately, for a responsive UI, and calls <code>onMove</code> as a separate step. If you're using the SwiftData models directly, calling <code>store.apply(_:)</code> from <code>onMove</code> keeps every card's <code>sortIndex</code> correct on disk. Skipping that call still works for local, in-memory reordering, but the persisted order won't match what's on screen after your next fetch.</p>
+    </div>
+
+    <h3>Bringing your own storage instead</h3>
+    <p>Don't use SwiftData? Nothing above is required. Conform your Core Data entity, your GRDB record, or your plain server-backed struct to <code>KanbanCard</code>/<code>KanbanColumn</code> directly and apply <code>KanbanMove</code> however your storage layer expects — the same way the SwiftData adapter does, just without the ready-made types.</p>
+  </section>
+</div>
+</main>
+
+<footer>
+  <p>
+    Built by <a href="https://github.com/NerdSnipe-Inc" target="_blank" rel="noopener">NerdSnipe Inc</a> ·
+    AdvancedKanban is MIT licensed ·
+    Questions? <a href="mailto:nerdsnipe.inc@gmail.com">nerdsnipe.inc@gmail.com</a>
+  </p>
+</footer>
+
+</body>
+</html>

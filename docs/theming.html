@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Theming — AdvancedKanban</title>
+<meta name="description" content="How KanbanTheme works: what the package styles versus what stays yours, the default values, and a worked example of a custom theme." />
+<meta name="theme-color" content="#6366f1" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav>
+  <div class="inner">
+    <a class="nav-brand" href="./">Advanced<span>Kanban</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="./">Overview</a>
+      <a class="nav-link active" href="theming.html">Theming</a>
+      <a class="nav-link" href="accessibility.html">Accessibility</a>
+      <a class="nav-link" href="persistence.html">Persistence</a>
+      <a class="nav-link" href="examples.html">Examples</a>
+      <a class="nav-link" href="https://github.com/NerdSnipe-Inc/AdvancedKanban" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<div class="container">
+  <section class="section" style="padding-top:56px">
+    <p class="section-label">Guide</p>
+    <h2>Theming</h2>
+    <p class="section-sub">A theme is a set of chrome tokens applied with one modifier. It never touches what's inside a card.</p>
+
+    <h3>Where the boundary is</h3>
+    <p>AdvancedKanban renders <strong>chrome</strong> — the card's background, border, corner radius, shadow; the column's background and corner radius; the WIP-warning color; the drag ghost's opacity and the drop animation. It does <strong>not</strong> render anything inside a card or a column header — that's your <code>cardContent</code> and <code>columnHeader</code> view builders, and it stays that way deliberately: a fixed card schema is the most common complaint in Kanban component libraries, and typography/layout choices belong to your app's design system, not the package's.</p>
+
+    <div class="callout warn">
+      <span class="callout-label">The one thing the theme can't do for you</span>
+      <p>Because content is entirely yours, <strong>text color inside a card is your responsibility</strong> — not the theme's. If your card content uses <code>.primary</code> and your theme sets a fixed light <code>cardBackground</code> under a dark system appearance, you'll get white-on-white. Give your card content an explicit color that's paired with whatever background your theme actually renders, the same way you'd theme any other view.</p>
+    </div>
+
+    <h3>Applying a theme</h3>
+    <pre><span class="type">KanbanBoard</span>(<span class="cm">/* ... */</span>)
+    .kanbanTheme(<span class="type">KanbanTheme</span>(
+        columnBackground: .gray.opacity(<span class="fn">0.08</span>),
+        cardBackground: .white,
+        cardBorder: .gray.opacity(<span class="fn">0.2</span>),
+        cardCornerRadius: <span class="fn">12</span>,
+        cardSpacing: <span class="fn">8</span>,
+        columnWidth: <span class="fn">280</span>,
+        columnCornerRadius: <span class="fn">16</span>,
+        wipLimitWarningColor: .orange,
+        dragGhostOpacity: <span class="fn">0.85</span>,
+        dropAnimation: .spring(response: <span class="fn">0.35</span>, dampingFraction: <span class="fn">0.8</span>)
+    ))</pre>
+    <p>Read from <code>@Environment(\.kanbanTheme)</code> anywhere below the modifier if your own views want to match — it's a plain SwiftUI environment value, not something internal to the package.</p>
+
+    <h3><code>KanbanTheme</code> reference</h3>
+    <table class="api-table">
+      <tr><th>Field</th><th>Type</th><th>Default</th></tr>
+      <tr><td>columnBackground</td><td>Color</td><td>System secondary background</td></tr>
+      <tr><td>cardBackground</td><td>Color</td><td>System background</td></tr>
+      <tr><td>cardBorder</td><td>Color</td><td><code>.gray.opacity(0.25)</code></td></tr>
+      <tr><td>cardCornerRadius</td><td>CGFloat</td><td><code>10</code></td></tr>
+      <tr><td>cardSpacing</td><td>CGFloat</td><td><code>8</code></td></tr>
+      <tr><td>columnWidth</td><td>CGFloat</td><td><code>280</code></td></tr>
+      <tr><td>columnCornerRadius</td><td>CGFloat</td><td><code>14</code></td></tr>
+      <tr><td>wipLimitWarningColor</td><td>Color</td><td><code>.orange</code></td></tr>
+      <tr><td>dragGhostOpacity</td><td>Double</td><td><code>0.85</code></td></tr>
+      <tr><td>dropAnimation</td><td>Animation</td><td><code>.spring(response: 0.35, dampingFraction: 0.8)</code></td></tr>
+    </table>
+    <p><code>KanbanTheme.default</code> is applied automatically if you never call <code>.kanbanTheme(_:)</code> — the values above are exactly what it uses.</p>
+
+    <h3>Switching themes at runtime</h3>
+    <p>Since <code>.kanbanTheme(_:)</code> is a plain modifier, driving it from <code>@State</code> just works — no special API:</p>
+    <pre><span class="kw">@State</span> <span class="kw">private</span> <span class="kw">var</span> highContrast = <span class="kw">false</span>
+
+<span class="type">KanbanBoard</span>(<span class="cm">/* ... */</span>)
+    .kanbanTheme(highContrast ? .highContrastTheme : .default)</pre>
+  </section>
+</div>
+</main>
+
+<footer>
+  <p>
+    Built by <a href="https://github.com/NerdSnipe-Inc" target="_blank" rel="noopener">NerdSnipe Inc</a> ·
+    AdvancedKanban is MIT licensed ·
+    Questions? <a href="mailto:nerdsnipe.inc@gmail.com">nerdsnipe.inc@gmail.com</a>
+  </p>
+</footer>
+
+</body>
+</html>
