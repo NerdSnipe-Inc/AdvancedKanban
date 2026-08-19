@@ -3,12 +3,16 @@ import SwiftUI
 // KanbanCoordinateSpace is declared in KanbanCardView.swift (Task 9) —
 // reused here, not redeclared.
 
+@available(iOS 18.0, macOS 15.0, *)
 public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader: View>: View {
     @Environment(\.kanbanTheme) private var theme
     @State private var dragState = KanbanDragState<Column.Card.ID, Column.ID>()
     @State private var cardFrames: [KanbanCardFrame<Column.Card.ID>] = []
     @State private var columnZones: [KanbanColumnZone<Column.ID>] = []
     @State private var draggedCardSize: CGSize = .zero
+    @State private var scrollPosition = ScrollPosition()
+    @State private var boardBounds: CGRect = .zero
+    @State private var autoscrollTimer: Timer?
 
     @Binding var columns: [Column]
     let wipLimitBehavior: WIPLimitBehavior
@@ -61,6 +65,13 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
             }
             .padding(theme.cardSpacing * 2)
         }
+        .scrollPosition($scrollPosition)
+        .background(
+            GeometryReader { proxy in
+                Color.clear.onAppear { boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
+                    .onChange(of: proxy.size) { _, _ in boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
+            }
+        )
         .coordinateSpace(name: KanbanCoordinateSpace.name)
         .onPreferenceChange(KanbanFramePreferenceKey.self) { frames in
             // KanbanFramePreferenceKey carries type-erased AnyHashable ids
@@ -104,12 +115,39 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
         columns[index].isCollapsed.toggle()
     }
 
+    private func startAutoscrollIfNeeded() {
+        guard autoscrollTimer == nil else { return }
+        autoscrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
+            guard dragState.draggedCardID != nil, boardBounds.width > 0 else { return }
+            let direction = KanbanAutoscrollCalculator.direction(
+                pointerPosition: dragState.pointerLocation.x,
+                bounds: boardBounds.minX...boardBounds.maxX,
+                edgeBand: 60,
+                maxSpeed: 12
+            )
+            switch direction {
+            case .none:
+                break
+            case .negative(let magnitude):
+                scrollPosition.scrollTo(x: max(0, (scrollPosition.point?.x ?? 0) - magnitude))
+            case .positive(let magnitude):
+                scrollPosition.scrollTo(x: (scrollPosition.point?.x ?? 0) + magnitude)
+            }
+        }
+    }
+
+    private func stopAutoscroll() {
+        autoscrollTimer?.invalidate()
+        autoscrollTimer = nil
+    }
+
     private func dragGesture(for card: Column.Card, in column: Column) -> some Gesture {
         DragGesture(coordinateSpace: .named(KanbanCoordinateSpace.name))
             .onChanged { value in
                 if dragState.draggedCardID == nil {
                     dragState.beginDrag(cardID: card.id)
                     draggedCardSize = cardFrames.first(where: { $0.cardID == card.id })?.frame.size ?? .zero
+                    startAutoscrollIfNeeded()
                 }
                 dragState.updatePointer(
                     location: value.location,
@@ -123,6 +161,7 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
             .onEnded { _ in
                 commitDrag(for: card, from: column)
                 dragState.endDrag()
+                stopAutoscroll()
             }
     }
 
