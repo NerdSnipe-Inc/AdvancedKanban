@@ -36,7 +36,8 @@ macOS.)
 
 See [`Example/README.md`](Example/README.md). Open
 `Example/AdvancedKanbanExample.xcodeproj` in Xcode and run the
-`AdvancedKanbanExample` scheme; it depends on this package via a local path,
+`AdvancedKanbanExample_macOS` or `AdvancedKanbanExample_iOS` scheme (XcodeGen
+generates one per platform); it depends on this package via a local path,
 so it always builds against the source in your working tree — it's the
 fastest way to see a change (drag behavior, theming, keyboard/VoiceOver
 reorder) actually working before you write or update a unit test for it.

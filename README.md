@@ -20,7 +20,7 @@ and `Equatable`:
 ```swift
 import AdvancedKanban
 
-struct Task: KanbanCard {
+struct ExampleTask: KanbanCard {
     let id: UUID
     var title: String
 }
@@ -35,7 +35,7 @@ on tap:
 struct Stage: KanbanColumn {
     let id: UUID
     var name: String
-    var cards: [Task] = []
+    var cards: [ExampleTask] = []
     var wipLimit: Int? = nil
     var isCollapsed: Bool = false
 }
@@ -50,7 +50,7 @@ import AdvancedKanban
 
 struct ContentView: View {
     @State private var columns: [Stage] = [
-        Stage(id: UUID(), name: "To Do", cards: [Task(id: UUID(), title: "Write README")]),
+        Stage(id: UUID(), name: "To Do", cards: [ExampleTask(id: UUID(), title: "Write README")]),
         Stage(id: UUID(), name: "In Progress", wipLimit: 3),
         Stage(id: UUID(), name: "Done"),
     ]
@@ -63,6 +63,9 @@ struct ContentView: View {
                 // move.cardID / .sourceColumnID / .destinationColumnID / .destinationIndex
                 // — persist however you like (SwiftData, a network call, analytics).
             },
+            // Optional: gives VoiceOver real column names ("Move to In
+            // Progress") instead of describing the column by its raw id.
+            columnTitle: { $0.name },
             cardContent: { task in
                 Text(task.title).padding(8)
             },
@@ -113,7 +116,14 @@ yourself.
 ## Theming example
 
 ```swift
-KanbanBoard(columns: $columns, cardContent: { ... }, columnHeader: { ... })
+// The `KanbanBoard(...)` call is abbreviated here — see the full,
+// copy-pasteable version in "Add a board in 3 steps" above. Only the
+// `.kanbanTheme(_:)` modifier is the point of this snippet.
+KanbanBoard(
+    columns: $columns,
+    cardContent: { task in Text(task.title).padding(8) },
+    columnHeader: { stage in Text(stage.name).font(.headline) }
+)
     .kanbanTheme(
         KanbanTheme(
             columnBackground: .gray.opacity(0.08),
