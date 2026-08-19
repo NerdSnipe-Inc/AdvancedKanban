@@ -2,11 +2,13 @@ import SwiftUI
 
 struct TaskCardContent: View {
     let task: ExampleTask
+    var titleColor: Color = .primary
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(task.title)
                 .font(.subheadline.weight(.medium))
+                .foregroundStyle(titleColor)
             HStack {
                 Text(task.priority.rawValue.capitalized)
                     .font(.caption2.weight(.bold))
@@ -18,6 +20,7 @@ struct TaskCardContent: View {
                 Spacer()
                 Text(task.assigneeInitials)
                     .font(.caption2.weight(.semibold))
+                    .foregroundStyle(titleColor)
                     .frame(width: 22, height: 22)
                     .background(Circle().fill(.gray.opacity(0.2)))
             }

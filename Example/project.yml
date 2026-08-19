@@ -26,3 +26,22 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.nerdsnipe.advancedkanban.example
         SWIFT_VERSION: "5.9"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+schemes:
+  AdvancedKanbanExample (macOS):
+    build:
+      targets:
+        AdvancedKanbanExample_macOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+    shared: true
+  AdvancedKanbanExample (iOS):
+    build:
+      targets:
+        AdvancedKanbanExample_iOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+    shared: true

@@ -19,7 +19,7 @@ struct BoardScreen: View {
                     lastMoveDescription = "Moved \(move.cardID) to column \(move.destinationColumnID) at index \(move.destinationIndex)"
                 },
                 columnTitle: { $0.title },
-                cardContent: { task in TaskCardContent(task: task) },
+                cardContent: { task in TaskCardContent(task: task, titleColor: selectedTheme.cardTitleColor) },
                 columnHeader: { column in
                     Text(column.title).font(.headline)
                 }
