@@ -1,8 +1,8 @@
 # AdvancedKanban Example
 
 Open `AdvancedKanbanExample.xcodeproj` in Xcode and run the
-`AdvancedKanbanExample_macOS` scheme on macOS, or the
-`AdvancedKanbanExample_iOS` scheme on an iOS/iPadOS simulator. It depends on
+`AdvancedKanbanExample (macOS)` scheme on macOS, or the
+`AdvancedKanbanExample (iOS)` scheme on an iOS/iPadOS simulator. It depends on
 the parent `AdvancedKanban` package via a local path, so it always builds
 against the source in this repo.
 
