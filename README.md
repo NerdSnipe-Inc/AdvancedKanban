@@ -207,6 +207,16 @@ Then add the product(s) you need to your target:
 
 Requires iOS 17+ / macOS 14+ and Swift 5.9+.
 
+## Also from NerdSnipe Inc
+
+AdvancedKanban covers one component. If you're building the rest of the
+app around it, [**DesignFoundation Pro**](https://nerdsnipe-inc.github.io/design-foundation/pro/)
+is a library of **47 production-ready SwiftUI screens** and **29 SwiftUI UI
+blocks** — AI Chat, CRM, Analytics, E-commerce, Social, Project Management,
+Onboarding, and more — built on the free, MIT-licensed
+[DesignFoundation](https://nerdsnipe-inc.github.io/design-foundation/)
+theming engine. Same theme token, every screen restyles.
+
 ## License
 
 AdvancedKanban is available under the MIT license. See [LICENSE](LICENSE)
