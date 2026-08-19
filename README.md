@@ -18,6 +18,10 @@ sync with your data. You conform your existing card and column types to two
 small protocols, hand the board a `Binding<[Column]>`, and it drives
 reordering directly on your array.
 
+**[📖 Full documentation site →](https://nerdsnipe-inc.github.io/AdvancedKanban/)**
+— quickstart, theming, accessibility (keyboard + VoiceOver), persistence,
+and recipes.
+
 ## Add a board in 3 steps
 
 **1. Conform your card type to `KanbanCard`** — it only needs `Identifiable`
