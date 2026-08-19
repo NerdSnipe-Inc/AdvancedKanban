@@ -169,12 +169,12 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
     /// place.
     func applyMove(_ move: KanbanMove<Column.Card.ID, Column.ID>) {
         guard let sourceColumnIndex = columns.firstIndex(where: { $0.id == move.sourceColumnID }),
-              let card = columns[sourceColumnIndex].cards.first(where: { $0.id == move.cardID })
+              let card = columns[sourceColumnIndex].cards.first(where: { $0.id == move.cardID }),
+              let destinationColumnIndex = columns.firstIndex(where: { $0.id == move.destinationColumnID })
         else { return }
 
         withAnimation(theme.dropAnimation) {
             columns[sourceColumnIndex].cards.removeAll { $0.id == move.cardID }
-            guard let destinationColumnIndex = columns.firstIndex(where: { $0.id == move.destinationColumnID }) else { return }
             let clampedIndex = min(max(move.destinationIndex, 0), columns[destinationColumnIndex].cards.count)
             columns[destinationColumnIndex].cards.insert(card, at: clampedIndex)
         }
