@@ -3,16 +3,15 @@ import SwiftUI
 // KanbanCoordinateSpace is declared in KanbanCardView.swift (Task 9) —
 // reused here, not redeclared.
 
-@available(iOS 18.0, macOS 15.0, *)
 public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader: View>: View {
     @Environment(\.kanbanTheme) private var theme
     @State private var dragState = KanbanDragState<Column.Card.ID, Column.ID>()
     @State private var cardFrames: [KanbanCardFrame<Column.Card.ID>] = []
     @State private var columnZones: [KanbanColumnZone<Column.ID>] = []
     @State private var draggedCardSize: CGSize = .zero
-    @State private var scrollPosition = ScrollPosition()
     @State private var boardBounds: CGRect = .zero
     @State private var autoscrollTimer: Timer?
+    @State private var lastAutoscrollTargetColumnID: Column.ID?
 
     @Binding var columns: [Column]
     let wipLimitBehavior: WIPLimitBehavior
@@ -49,56 +48,58 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
     }
 
     public var body: some View {
-        ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: theme.cardSpacing * 2) {
-                ForEach(columns) { column in
-                    KanbanColumnView(
-                        column: column,
-                        draggedCardID: dragState.draggedCardID,
-                        wipDecision: wipDecision(for: column),
-                        onToggleCollapse: { toggleCollapse(columnID: column.id) },
-                        cardContent: cardContent,
-                        columnHeader: columnHeader,
-                        cardGesture: { card in dragGesture(for: card, in: column) }
+        ScrollViewReader { scrollProxy in
+            ScrollView(.horizontal) {
+                HStack(alignment: .top, spacing: theme.cardSpacing * 2) {
+                    ForEach(columns) { column in
+                        KanbanColumnView(
+                            column: column,
+                            draggedCardID: dragState.draggedCardID,
+                            wipDecision: wipDecision(for: column),
+                            onToggleCollapse: { toggleCollapse(columnID: column.id) },
+                            cardContent: cardContent,
+                            columnHeader: columnHeader,
+                            cardGesture: { card in dragGesture(for: card, in: column, scrollProxy: scrollProxy) }
+                        )
+                        .id(column.id)
+                    }
+                }
+                .padding(theme.cardSpacing * 2)
+            }
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.onAppear { boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
+                        .onChange(of: proxy.size) { _, _ in boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
+                }
+            )
+            .coordinateSpace(name: KanbanCoordinateSpace.name)
+            .onPreferenceChange(KanbanFramePreferenceKey.self) { frames in
+                // KanbanFramePreferenceKey carries type-erased AnyHashable ids
+                // (see Task 7) because KanbanCardView doesn't know Column.ID.
+                // KanbanBoard is the one place that knows the concrete types,
+                // so it casts back here.
+                cardFrames = frames.compactMap { frame in
+                    if case let .card(id, rect) = frame, let cardID = id.base as? Column.Card.ID {
+                        return KanbanCardFrame(cardID: cardID, frame: rect)
+                    }
+                    return nil
+                }
+                columnZones = frames.compactMap { frame in
+                    if case let .columnZone(id, rect) = frame, let columnID = id.base as? Column.ID {
+                        return KanbanColumnZone(columnID: columnID, frame: rect)
+                    }
+                    return nil
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                if let draggedCardID = dragState.draggedCardID,
+                   let card = columns.flatMap(\.cards).first(where: { $0.id == draggedCardID }) {
+                    KanbanDragGhostOverlay(
+                        content: cardContent(card),
+                        position: dragState.pointerLocation,
+                        size: draggedCardSize
                     )
                 }
-            }
-            .padding(theme.cardSpacing * 2)
-        }
-        .scrollPosition($scrollPosition)
-        .background(
-            GeometryReader { proxy in
-                Color.clear.onAppear { boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
-                    .onChange(of: proxy.size) { _, _ in boardBounds = proxy.frame(in: .named(KanbanCoordinateSpace.name)) }
-            }
-        )
-        .coordinateSpace(name: KanbanCoordinateSpace.name)
-        .onPreferenceChange(KanbanFramePreferenceKey.self) { frames in
-            // KanbanFramePreferenceKey carries type-erased AnyHashable ids
-            // (see Task 7) because KanbanCardView doesn't know Column.ID.
-            // KanbanBoard is the one place that knows the concrete types,
-            // so it casts back here.
-            cardFrames = frames.compactMap { frame in
-                if case let .card(id, rect) = frame, let cardID = id.base as? Column.Card.ID {
-                    return KanbanCardFrame(cardID: cardID, frame: rect)
-                }
-                return nil
-            }
-            columnZones = frames.compactMap { frame in
-                if case let .columnZone(id, rect) = frame, let columnID = id.base as? Column.ID {
-                    return KanbanColumnZone(columnID: columnID, frame: rect)
-                }
-                return nil
-            }
-        }
-        .overlay(alignment: .topLeading) {
-            if let draggedCardID = dragState.draggedCardID,
-               let card = columns.flatMap(\.cards).first(where: { $0.id == draggedCardID }) {
-                KanbanDragGhostOverlay(
-                    content: cardContent(card),
-                    position: dragState.pointerLocation,
-                    size: draggedCardSize
-                )
             }
         }
     }
@@ -115,23 +116,39 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
         columns[index].isCollapsed.toggle()
     }
 
-    private func startAutoscrollIfNeeded() {
+    private func startAutoscrollIfNeeded(scrollProxy: ScrollViewProxy) {
         guard autoscrollTimer == nil else { return }
-        autoscrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
-            guard dragState.draggedCardID != nil, boardBounds.width > 0 else { return }
+        autoscrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 3.0, repeats: true) { _ in
+            guard dragState.draggedCardID != nil, boardBounds.width > 0,
+                  let currentColumnID = dragState.proposedColumnID,
+                  let currentIndex = columns.firstIndex(where: { $0.id == currentColumnID })
+            else { return }
+
             let direction = KanbanAutoscrollCalculator.direction(
                 pointerPosition: dragState.pointerLocation.x,
                 bounds: boardBounds.minX...boardBounds.maxX,
                 edgeBand: 60,
                 maxSpeed: 12
             )
+
+            let targetColumn: Column?
+            let anchor: UnitPoint
             switch direction {
             case .none:
-                break
-            case .negative(let magnitude):
-                scrollPosition.scrollTo(x: max(0, (scrollPosition.point?.x ?? 0) - magnitude))
-            case .positive(let magnitude):
-                scrollPosition.scrollTo(x: (scrollPosition.point?.x ?? 0) + magnitude)
+                targetColumn = nil
+                anchor = .leading
+            case .negative:
+                targetColumn = currentIndex > 0 ? columns[currentIndex - 1] : nil
+                anchor = .leading
+            case .positive:
+                targetColumn = currentIndex < columns.count - 1 ? columns[currentIndex + 1] : nil
+                anchor = .trailing
+            }
+
+            guard let targetColumn, targetColumn.id != lastAutoscrollTargetColumnID else { return }
+            lastAutoscrollTargetColumnID = targetColumn.id
+            withAnimation(.easeOut(duration: 0.3)) {
+                scrollProxy.scrollTo(targetColumn.id, anchor: anchor)
             }
         }
     }
@@ -139,15 +156,16 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
     private func stopAutoscroll() {
         autoscrollTimer?.invalidate()
         autoscrollTimer = nil
+        lastAutoscrollTargetColumnID = nil
     }
 
-    private func dragGesture(for card: Column.Card, in column: Column) -> some Gesture {
+    private func dragGesture(for card: Column.Card, in column: Column, scrollProxy: ScrollViewProxy) -> some Gesture {
         DragGesture(coordinateSpace: .named(KanbanCoordinateSpace.name))
             .onChanged { value in
                 if dragState.draggedCardID == nil {
                     dragState.beginDrag(cardID: card.id)
                     draggedCardSize = cardFrames.first(where: { $0.cardID == card.id })?.frame.size ?? .zero
-                    startAutoscrollIfNeeded()
+                    startAutoscrollIfNeeded(scrollProxy: scrollProxy)
                 }
                 dragState.updatePointer(
                     location: value.location,
