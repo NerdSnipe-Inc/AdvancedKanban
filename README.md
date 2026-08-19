@@ -1,5 +1,180 @@
 # AdvancedKanban
 
-A premium, fully customizable Kanban board for SwiftUI on iOS, iPadOS, and macOS.
+A Kanban board component for SwiftUI on iOS, iPadOS, and macOS. You bring
+your own model types and your own card UI; AdvancedKanban brings the board
+mechanics — cross-column pointer drag with autoscroll, a full keyboard
+move-mode, VoiceOver parity for every drag interaction, WIP limits, column
+collapse, and a small theming surface — so you don't have to reimplement
+drag-and-drop reordering from scratch for the third time.
 
-> Documentation in progress — see `docs/superpowers/specs/2026-08-19-advanced-kanban-design.md` for the design.
+There's no wrapper type to adopt and no separate "board model" to keep in
+sync with your data. You conform your existing card and column types to two
+small protocols, hand the board a `Binding<[Column]>`, and it drives
+reordering directly on your array.
+
+## Add a board in 3 steps
+
+**1. Conform your card type to `KanbanCard`** — it only needs `Identifiable`
+and `Equatable`:
+
+```swift
+import AdvancedKanban
+
+struct Task: KanbanCard {
+    let id: UUID
+    var title: String
+}
+```
+
+**2. Conform your column type to `KanbanColumn`** — it owns an ordered
+`cards` array (order *is* the board's display order, no separate sort index
+needed), an optional `wipLimit`, and an `isCollapsed` flag the board toggles
+on tap:
+
+```swift
+struct Stage: KanbanColumn {
+    let id: UUID
+    var name: String
+    var cards: [Task] = []
+    var wipLimit: Int? = nil
+    var isCollapsed: Bool = false
+}
+```
+
+**3. Call `KanbanBoard`** with a binding to your columns and view builders
+for card and column-header content:
+
+```swift
+import SwiftUI
+import AdvancedKanban
+
+struct ContentView: View {
+    @State private var columns: [Stage] = [
+        Stage(id: UUID(), name: "To Do", cards: [Task(id: UUID(), title: "Write README")]),
+        Stage(id: UUID(), name: "In Progress", wipLimit: 3),
+        Stage(id: UUID(), name: "Done"),
+    ]
+
+    var body: some View {
+        KanbanBoard(
+            columns: $columns,
+            wipLimitBehavior: .preventDrop,
+            onMove: { move in
+                // move.cardID / .sourceColumnID / .destinationColumnID / .destinationIndex
+                // — persist however you like (SwiftData, a network call, analytics).
+            },
+            cardContent: { task in
+                Text(task.title).padding(8)
+            },
+            columnHeader: { stage in
+                Text(stage.name).font(.headline)
+            }
+        )
+    }
+}
+```
+
+That's a complete, draggable, keyboard- and VoiceOver-accessible board. The
+`onMove` closure fires *after* the board has already mutated your `columns`
+binding, so it's purely a hook for persistence — you never diff arrays
+yourself.
+
+## Features
+
+- **Cross-column drag and drop** — pointer-driven reorder within and across
+  columns, with edge autoscroll when dragging near the board's horizontal
+  edges.
+- **Keyboard move-mode** — Tab to focus a card, Space to enter move mode,
+  arrow keys to move within or across columns, Return to commit, Escape to
+  cancel. No mouse required.
+- **VoiceOver parity** — every drag interaction has an equivalent
+  accessibility action (Move Up / Move Down / Move to \<Column\>) exposed
+  through the rotor, so VoiceOver users get the same reordering power as
+  pointer and keyboard users.
+- **WIP limits** — set `wipLimit` per column and choose `.warnOnly` (the
+  column renders warning styling but the drop still succeeds) or
+  `.preventDrop` (the drop is rejected and the card animates back) via
+  `wipLimitBehavior`.
+- **Column collapse** — columns collapse to a narrow title+count strip on
+  tap; state lives on your own `isCollapsed` property, so it's easy to
+  persist.
+- **Theming** — `KanbanTheme` covers chrome-level tokens (backgrounds,
+  borders, corner radii, spacing, WIP warning color, drag ghost opacity,
+  drop animation) and is applied with `.kanbanTheme(_:)`. Card and
+  column-header *content* is entirely yours via the `cardContent` and
+  `columnHeader` view builders, so the theme never needs to know about your
+  typography or layout.
+- **Optional SwiftData adapter** — `AdvancedKanbanSwiftData` (a separate
+  product) provides `SwiftDataKanbanCard` / `SwiftDataKanbanColumn` models
+  and a `KanbanStore` that applies a `KanbanMove` to a `ModelContext` in one
+  call. Not linked into the base `AdvancedKanban` library, so you're never
+  forced into SwiftData if you don't want it.
+
+## Theming example
+
+```swift
+KanbanBoard(columns: $columns, cardContent: { ... }, columnHeader: { ... })
+    .kanbanTheme(
+        KanbanTheme(
+            columnBackground: .gray.opacity(0.08),
+            cardBackground: .white,
+            cardBorder: .gray.opacity(0.2),
+            cardCornerRadius: 12,
+            cardSpacing: 8,
+            columnWidth: 280,
+            columnCornerRadius: 16,
+            wipLimitWarningColor: .orange,
+            dragGhostOpacity: 0.85,
+            dropAnimation: .spring(response: 0.35, dampingFraction: 0.8)
+        )
+    )
+```
+
+`KanbanTheme.default` is used automatically if you don't apply one.
+
+## Example app
+
+A runnable example lives in [`Example/`](Example/README.md). It demonstrates
+cross-column drag with a WIP limit, custom card content, theme switching,
+column collapse, keyboard reorder, and VoiceOver reorder — open
+`Example/AdvancedKanbanExample.xcodeproj` in Xcode and run it on macOS or an
+iOS/iPadOS simulator.
+
+## Design spec
+
+The full design rationale — protocol boundaries, drag-gesture state
+machine, keyboard/VoiceOver parity model, WIP limit semantics, and theming
+surface — is documented in
+[`docs/superpowers/specs/2026-08-19-advanced-kanban-design.md`](docs/superpowers/specs/2026-08-19-advanced-kanban-design.md).
+
+## Installation
+
+Swift Package Manager, via Xcode (File > Add Package Dependencies) or
+`Package.swift`:
+
+```swift
+dependencies: [
+    // Placeholder URL — update this once the package has a real GitHub remote.
+    .package(url: "https://github.com/<org>/AdvancedKanban", from: "1.0.0")
+]
+```
+
+Then add the product(s) you need to your target:
+
+```swift
+.target(
+    name: "YourApp",
+    dependencies: [
+        .product(name: "AdvancedKanban", package: "AdvancedKanban"),
+        // Optional, only if you want the SwiftData persistence adapter:
+        .product(name: "AdvancedKanbanSwiftData", package: "AdvancedKanban"),
+    ]
+)
+```
+
+Requires iOS 17+ / macOS 14+ and Swift 5.9+.
+
+## License
+
+AdvancedKanban is available under the MIT license. See [LICENSE](LICENSE)
+for the full text.
