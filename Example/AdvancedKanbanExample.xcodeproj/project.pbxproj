@@ -1,0 +1,499 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02CABA23A6D2C5945554D88A /* BoardScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78102E5A37682236367B38EE /* BoardScreen.swift */; };
+		0693EDF096BE52F65D54EFA1 /* AdvancedKanbanSwiftData in Frameworks */ = {isa = PBXBuildFile; productRef = 05A22D92C3DC460B8920183F /* AdvancedKanbanSwiftData */; };
+		14DF0F177ECE2E480346946B /* TaskCardContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC575222E9804E5B4035ECB7 /* TaskCardContent.swift */; };
+		1FBC23D0C547D3BC383843E3 /* ThemePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FC7FE535D0FFCD50EF6BF0 /* ThemePicker.swift */; };
+		34807987B46F738E05630281 /* AdvancedKanbanSwiftData in Frameworks */ = {isa = PBXBuildFile; productRef = 451DA4666BEF797DB7759583 /* AdvancedKanbanSwiftData */; };
+		388CEEBF27019BA9D9C9A68E /* TaskCardContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC575222E9804E5B4035ECB7 /* TaskCardContent.swift */; };
+		507D49D911282C8C2B085D92 /* AdvancedKanbanExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A0CB88B85725B6F6265F5F /* AdvancedKanbanExampleApp.swift */; };
+		594CCF8FCC7D929BAEDB6601 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E46DC4AD55D23E6E7EC9A6B /* Assets.xcassets */; };
+		69385FB15C280CD9D9C63209 /* ThemePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FC7FE535D0FFCD50EF6BF0 /* ThemePicker.swift */; };
+		85A6CED2754E909C06022033 /* BoardScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78102E5A37682236367B38EE /* BoardScreen.swift */; };
+		96CB54D3DA053DE3E35A13FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E46DC4AD55D23E6E7EC9A6B /* Assets.xcassets */; };
+		C4439CAC1924ECCF4BD15C70 /* ExampleTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D0C3C7B91626F76A329D8C /* ExampleTask.swift */; };
+		C964F23AB6918A2B6C8E19E8 /* ExampleTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D0C3C7B91626F76A329D8C /* ExampleTask.swift */; };
+		D39FAEB4FD7BA8FAA2214B85 /* ExampleColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B507CB4DA2BB5E0DAFE25BE /* ExampleColumn.swift */; };
+		D457D48B9675F6C2775BE830 /* AdvancedKanban in Frameworks */ = {isa = PBXBuildFile; productRef = B36F5DB47AD49BB3077FBF15 /* AdvancedKanban */; };
+		E8A05E145C9C8E581CC9E965 /* ExampleColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B507CB4DA2BB5E0DAFE25BE /* ExampleColumn.swift */; };
+		EBDFFB28379F88BC9F517947 /* AdvancedKanbanExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A0CB88B85725B6F6265F5F /* AdvancedKanbanExampleApp.swift */; };
+		FF305EABC3EFE1074674DBF5 /* AdvancedKanban in Frameworks */ = {isa = PBXBuildFile; productRef = 4BF1AF98B3840FF058BE132F /* AdvancedKanban */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		11FC7FE535D0FFCD50EF6BF0 /* ThemePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePicker.swift; sourceTree = "<group>"; };
+		54D0C3C7B91626F76A329D8C /* ExampleTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleTask.swift; sourceTree = "<group>"; };
+		68A0CB88B85725B6F6265F5F /* AdvancedKanbanExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedKanbanExampleApp.swift; sourceTree = "<group>"; };
+		6B507CB4DA2BB5E0DAFE25BE /* ExampleColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleColumn.swift; sourceTree = "<group>"; };
+		78102E5A37682236367B38EE /* BoardScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardScreen.swift; sourceTree = "<group>"; };
+		8E46DC4AD55D23E6E7EC9A6B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		94031E35E421F118ECB8DE50 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		95192326143C503487C28C67 /* AdvancedKanbanExample.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AdvancedKanbanExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		99B5C2C20ED728BE37DF97DB /* AdvancedKanban */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AdvancedKanban; path = ..; sourceTree = SOURCE_ROOT; };
+		CC575222E9804E5B4035ECB7 /* TaskCardContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCardContent.swift; sourceTree = "<group>"; };
+		F6CDBD005A229E7F71692D92 /* AdvancedKanbanExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AdvancedKanbanExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A2D520176E1A0C7353DA9A9E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D457D48B9675F6C2775BE830 /* AdvancedKanban in Frameworks */,
+				34807987B46F738E05630281 /* AdvancedKanbanSwiftData in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D138A971F34FAF09914E853B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FF305EABC3EFE1074674DBF5 /* AdvancedKanban in Frameworks */,
+				0693EDF096BE52F65D54EFA1 /* AdvancedKanbanSwiftData in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3957BB561E903685345C9E73 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				78102E5A37682236367B38EE /* BoardScreen.swift */,
+				CC575222E9804E5B4035ECB7 /* TaskCardContent.swift */,
+				11FC7FE535D0FFCD50EF6BF0 /* ThemePicker.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		94F16430264D461DD74C52BC /* AdvancedKanbanExample */ = {
+			isa = PBXGroup;
+			children = (
+				68A0CB88B85725B6F6265F5F /* AdvancedKanbanExampleApp.swift */,
+				8E46DC4AD55D23E6E7EC9A6B /* Assets.xcassets */,
+				94031E35E421F118ECB8DE50 /* Info.plist */,
+				A2A43ED81ACBA6277FBFD923 /* Model */,
+				3957BB561E903685345C9E73 /* Views */,
+			);
+			path = AdvancedKanbanExample;
+			sourceTree = "<group>";
+		};
+		95245D69B1B98DE547F509C5 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				99B5C2C20ED728BE37DF97DB /* AdvancedKanban */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		A2A43ED81ACBA6277FBFD923 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				6B507CB4DA2BB5E0DAFE25BE /* ExampleColumn.swift */,
+				54D0C3C7B91626F76A329D8C /* ExampleTask.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C2DE8DE64ADEED8A9DF13380 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				95192326143C503487C28C67 /* AdvancedKanbanExample.app */,
+				F6CDBD005A229E7F71692D92 /* AdvancedKanbanExample.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D3569AC2D0528D1F6E866353 = {
+			isa = PBXGroup;
+			children = (
+				94F16430264D461DD74C52BC /* AdvancedKanbanExample */,
+				95245D69B1B98DE547F509C5 /* Packages */,
+				C2DE8DE64ADEED8A9DF13380 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8B6AC3AA6576FE8E314491D8 /* AdvancedKanbanExample_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5450D1D1B4F4B53F726FF02A /* Build configuration list for PBXNativeTarget "AdvancedKanbanExample_macOS" */;
+			buildPhases = (
+				6D7D9E24ACDE7E9059821AD0 /* Sources */,
+				2054D5362054E2E9197B56A0 /* Resources */,
+				A2D520176E1A0C7353DA9A9E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AdvancedKanbanExample_macOS;
+			packageProductDependencies = (
+				B36F5DB47AD49BB3077FBF15 /* AdvancedKanban */,
+				451DA4666BEF797DB7759583 /* AdvancedKanbanSwiftData */,
+			);
+			productName = AdvancedKanbanExample_macOS;
+			productReference = F6CDBD005A229E7F71692D92 /* AdvancedKanbanExample.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A764CB53EB17DF296E314B3A /* AdvancedKanbanExample_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B3374B3D72053C7E1F03641 /* Build configuration list for PBXNativeTarget "AdvancedKanbanExample_iOS" */;
+			buildPhases = (
+				CD278126DA97410B16915C02 /* Sources */,
+				A60A053B04778B0F6BC41CB2 /* Resources */,
+				D138A971F34FAF09914E853B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AdvancedKanbanExample_iOS;
+			packageProductDependencies = (
+				4BF1AF98B3840FF058BE132F /* AdvancedKanban */,
+				05A22D92C3DC460B8920183F /* AdvancedKanbanSwiftData */,
+			);
+			productName = AdvancedKanbanExample_iOS;
+			productReference = 95192326143C503487C28C67 /* AdvancedKanbanExample.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92607398BDDE3C07968F2214 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = ECDAF167DD224EC641C9FC40 /* Build configuration list for PBXProject "AdvancedKanbanExample" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D3569AC2D0528D1F6E866353;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A8FB877E380C8A95727BCF81 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = C2DE8DE64ADEED8A9DF13380 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A764CB53EB17DF296E314B3A /* AdvancedKanbanExample_iOS */,
+				8B6AC3AA6576FE8E314491D8 /* AdvancedKanbanExample_macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2054D5362054E2E9197B56A0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				594CCF8FCC7D929BAEDB6601 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A60A053B04778B0F6BC41CB2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96CB54D3DA053DE3E35A13FA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6D7D9E24ACDE7E9059821AD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBDFFB28379F88BC9F517947 /* AdvancedKanbanExampleApp.swift in Sources */,
+				85A6CED2754E909C06022033 /* BoardScreen.swift in Sources */,
+				E8A05E145C9C8E581CC9E965 /* ExampleColumn.swift in Sources */,
+				C4439CAC1924ECCF4BD15C70 /* ExampleTask.swift in Sources */,
+				14DF0F177ECE2E480346946B /* TaskCardContent.swift in Sources */,
+				1FBC23D0C547D3BC383843E3 /* ThemePicker.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CD278126DA97410B16915C02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				507D49D911282C8C2B085D92 /* AdvancedKanbanExampleApp.swift in Sources */,
+				02CABA23A6D2C5945554D88A /* BoardScreen.swift in Sources */,
+				D39FAEB4FD7BA8FAA2214B85 /* ExampleColumn.swift in Sources */,
+				C964F23AB6918A2B6C8E19E8 /* ExampleTask.swift in Sources */,
+				388CEEBF27019BA9D9C9A68E /* TaskCardContent.swift in Sources */,
+				69385FB15C280CD9D9C63209 /* ThemePicker.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA0F9532C2A610784CE8DF3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = AdvancedKanbanExample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nerdsnipe.advancedkanban.example;
+				PRODUCT_NAME = AdvancedKanbanExample;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		B7F2579912DCE0837338A5FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = AdvancedKanbanExample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nerdsnipe.advancedkanban.example;
+				PRODUCT_NAME = AdvancedKanbanExample;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		D28662F79A6AAAD36B71D951 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D50E1AC2F1B5FC76E4AE1650 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D9C1BEFE3A403EB3D1CD9080 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = AdvancedKanbanExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nerdsnipe.advancedkanban.example;
+				PRODUCT_NAME = AdvancedKanbanExample;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E1EAE545E9B716756C725DD5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = AdvancedKanbanExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nerdsnipe.advancedkanban.example;
+				PRODUCT_NAME = AdvancedKanbanExample;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3B3374B3D72053C7E1F03641 /* Build configuration list for PBXNativeTarget "AdvancedKanbanExample_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1EAE545E9B716756C725DD5 /* Debug */,
+				D9C1BEFE3A403EB3D1CD9080 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5450D1D1B4F4B53F726FF02A /* Build configuration list for PBXNativeTarget "AdvancedKanbanExample_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7F2579912DCE0837338A5FF /* Debug */,
+				AA0F9532C2A610784CE8DF3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		ECDAF167DD224EC641C9FC40 /* Build configuration list for PBXProject "AdvancedKanbanExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D28662F79A6AAAD36B71D951 /* Debug */,
+				D50E1AC2F1B5FC76E4AE1650 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A8FB877E380C8A95727BCF81 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		05A22D92C3DC460B8920183F /* AdvancedKanbanSwiftData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AdvancedKanbanSwiftData;
+		};
+		451DA4666BEF797DB7759583 /* AdvancedKanbanSwiftData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AdvancedKanbanSwiftData;
+		};
+		4BF1AF98B3840FF058BE132F /* AdvancedKanban */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AdvancedKanban;
+		};
+		B36F5DB47AD49BB3077FBF15 /* AdvancedKanban */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AdvancedKanban;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 92607398BDDE3C07968F2214 /* Project object */;
+}
