@@ -19,7 +19,7 @@ let package = Package(
         ),
         .testTarget(
             name: "AdvancedKanbanTests",
-            dependencies: ["AdvancedKanban"]
+            dependencies: ["AdvancedKanban", "AdvancedKanbanSwiftData"]
         ),
     ]
 )
