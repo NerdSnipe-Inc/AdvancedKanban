@@ -37,4 +37,21 @@ import CoreGraphics
         )
         #expect(direction == .none)
     }
+
+    @Test func zeroEdgeBandProducesNoScrollRegardlessOfPointerPosition() {
+        let directionAtLowerEdge = KanbanAutoscrollCalculator.direction(
+            pointerPosition: 0, bounds: 0...1000, edgeBand: 0, maxSpeed: 20
+        )
+        #expect(directionAtLowerEdge == .none)
+
+        let directionAtUpperEdge = KanbanAutoscrollCalculator.direction(
+            pointerPosition: 1000, bounds: 0...1000, edgeBand: 0, maxSpeed: 20
+        )
+        #expect(directionAtUpperEdge == .none)
+
+        let directionInMiddle = KanbanAutoscrollCalculator.direction(
+            pointerPosition: 500, bounds: 0...1000, edgeBand: 0, maxSpeed: 20
+        )
+        #expect(directionInMiddle == .none)
+    }
 }

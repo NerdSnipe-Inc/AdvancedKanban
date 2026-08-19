@@ -18,6 +18,7 @@ public enum KanbanAutoscrollCalculator {
         edgeBand: CGFloat,
         maxSpeed: CGFloat
     ) -> KanbanAutoscrollDirection {
+        guard edgeBand > 0 else { return .none }
         guard bounds.contains(pointerPosition) else { return .none }
 
         let lowerBandEdge = bounds.lowerBound + edgeBand
