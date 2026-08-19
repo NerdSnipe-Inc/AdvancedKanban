@@ -1658,17 +1658,42 @@ git commit -m "Add KanbanBoard: assembly, drag gesture wiring, autoscroll hookup
 
 **Interfaces:**
 - Consumes: `KanbanAutoscrollCalculator` (Task 6).
-- Produces: horizontal autoscroll of the board's `ScrollView` while a drag's pointer sits near the leading/trailing edge, using `ScrollViewReader`/`scrollPosition` state added in this task.
+- Produces: horizontal autoscroll of the board's `ScrollView` while a drag's pointer sits near the leading/trailing edge, using `ScrollViewReader`/`proxy.scrollTo(id:anchor:)`.
 
-- [ ] **Step 1: Add scroll-position state and a `ScrollViewReader` id per column**
+**CORRECTED 2026-08-19 (controller ruling during subagent-driven execution):** the
+original text of this task used `ScrollPosition` (the struct overload of
+`.scrollPosition(_:)` supporting arbitrary `.scrollTo(x:y:)`), which requires
+iOS 18/macOS 15 — a platform floor the package's Global Constraints do not
+allow (iOS 17+/macOS 14+, spec §4). `KanbanBoard` is the package's core public
+type; gating it behind `@available(iOS 18, macOS 15, *)` would silently break
+that floor for every consumer. The corrected design below uses
+`ScrollViewReader` + `proxy.scrollTo(id:anchor:)`, which has no such
+restriction, at the cost of column-snap autoscroll (advancing one column at a
+time) instead of continuous pixel-level scrolling — a reasonable trade that
+still satisfies "the board autoscrolls near the edges during a drag."
 
-In `KanbanBoard`, add:
+- [ ] **Step 1: Wrap the board's ScrollView in a `ScrollViewReader` and give each column an explicit id**
+
+In `KanbanBoard.body`, wrap the existing `ScrollView(.horizontal) { ... }` in a `ScrollViewReader`:
 ```swift
-@State private var scrollPosition = ScrollPosition()
+ScrollViewReader { scrollProxy in
+    ScrollView(.horizontal) {
+        HStack(alignment: .top, spacing: theme.cardSpacing * 2) {
+            ForEach(columns) { column in
+                KanbanColumnView(/* ...as before... */)
+                    .id(column.id)
+            }
+        }
+        .padding(theme.cardSpacing * 2)
+    }
+    .coordinateSpace(name: KanbanCoordinateSpace.name)
+    // ...the rest of the existing modifiers (.onPreferenceChange, .overlay) stay attached to this ScrollView...
+}
+```
+Add a `boardBounds` state property and its `GeometryReader`-based report (this part is unchanged from the original design — it's still needed for edge-band detection):
+```swift
 @State private var boardBounds: CGRect = .zero
 ```
-
-Wrap the existing `ScrollView(.horizontal) { ... }` body with `.scrollPosition($scrollPosition)` and add a `GeometryReader`-based bounds report:
 ```swift
 .background(
     GeometryReader { proxy in
@@ -1678,29 +1703,45 @@ Wrap the existing `ScrollView(.horizontal) { ... }` body with `.scrollPosition($
 )
 ```
 
-- [ ] **Step 2: Add an autoscroll timer driven by `dragState.pointerLocation`**
+- [ ] **Step 2: Add an autoscroll timer driven by `dragState.pointerLocation`, scrolling to the adjacent column**
 
-Add a `Timer.publish`-based subscription that only runs while dragging:
 ```swift
 @State private var autoscrollTimer: Timer?
+@State private var lastAutoscrollTargetColumnID: Column.ID?
 
-private func startAutoscrollIfNeeded() {
+private func startAutoscrollIfNeeded(scrollProxy: ScrollViewProxy) {
     guard autoscrollTimer == nil else { return }
-    autoscrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
-        guard dragState.draggedCardID != nil, boardBounds.width > 0 else { return }
+    autoscrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 3.0, repeats: true) { _ in
+        guard dragState.draggedCardID != nil, boardBounds.width > 0,
+              let currentColumnID = dragState.proposedColumnID,
+              let currentIndex = columns.firstIndex(where: { $0.id == currentColumnID })
+        else { return }
+
         let direction = KanbanAutoscrollCalculator.direction(
             pointerPosition: dragState.pointerLocation.x,
             bounds: boardBounds.minX...boardBounds.maxX,
             edgeBand: 60,
             maxSpeed: 12
         )
+
+        let targetColumn: Column?
+        let anchor: UnitPoint
         switch direction {
         case .none:
-            break
-        case .negative(let magnitude):
-            scrollPosition.scrollTo(x: max(0, (scrollPosition.point?.x ?? 0) - magnitude))
-        case .positive(let magnitude):
-            scrollPosition.scrollTo(x: (scrollPosition.point?.x ?? 0) + magnitude)
+            targetColumn = nil
+            anchor = .leading
+        case .negative:
+            targetColumn = currentIndex > 0 ? columns[currentIndex - 1] : nil
+            anchor = .leading
+        case .positive:
+            targetColumn = currentIndex < columns.count - 1 ? columns[currentIndex + 1] : nil
+            anchor = .trailing
+        }
+
+        guard let targetColumn, targetColumn.id != lastAutoscrollTargetColumnID else { return }
+        lastAutoscrollTargetColumnID = targetColumn.id
+        withAnimation(.easeOut(duration: 0.3)) {
+            scrollProxy.scrollTo(targetColumn.id, anchor: anchor)
         }
     }
 }
@@ -1708,24 +1749,40 @@ private func startAutoscrollIfNeeded() {
 private func stopAutoscroll() {
     autoscrollTimer?.invalidate()
     autoscrollTimer = nil
+    lastAutoscrollTargetColumnID = nil
 }
 ```
 
+Note the interval changed from `1.0/30.0` to `1.0/3.0`: since each tick now
+performs a whole-column scroll-and-settle rather than a small pixel nudge, a
+30Hz tick rate would queue overlapping animated scrolls. ~3 ticks/second
+gives each column-snap animation (0.3s) room to mostly complete before the
+next tick can fire, while still feeling responsive to a held edge position.
+
 - [ ] **Step 3: Wire timer start/stop into the drag gesture**
 
-In `dragGesture(for:in:)`'s `.onChanged`, after `dragState.beginDrag(...)`, add `startAutoscrollIfNeeded()`. In `.onEnded`, after `dragState.endDrag()`, add `stopAutoscroll()`.
+`dragGesture(for:in:)` needs access to the `ScrollViewProxy` from Step 1's
+`ScrollViewReader`. Thread it through: change `dragGesture(for:in:)`'s
+signature to accept a `scrollProxy: ScrollViewProxy` parameter, and update
+its two call sites (inside the `ScrollViewReader` closure, where
+`KanbanColumnView` is constructed, `cardGesture: { card in dragGesture(for: card, in: column, scrollProxy: scrollProxy) }`).
+
+In `dragGesture(for:in:scrollProxy:)`'s `.onChanged`, after
+`dragState.beginDrag(...)`, add `startAutoscrollIfNeeded(scrollProxy: scrollProxy)`.
+In `.onEnded`, after `dragState.endDrag()`, add `stopAutoscroll()`.
 
 - [ ] **Step 4: Verify the package builds**
 
 Run: `swift build`
-Expected: Build succeeds.
+Expected: Build succeeds on the iOS 17/macOS 14 floor — no `@available` gate needed anywhere in this file.
 
 - [ ] **Step 5: Manual verification note**
 
-Automated verification of `scrollPosition.scrollTo` firing correctly requires
+Automated verification of `scrollProxy.scrollTo` firing correctly requires
 a hosted view (out of scope for unit tests per spec §13) — verify visually
-in the example app once Task 15 exists, by dragging a card to within 60pt of
-either horizontal edge and confirming the board scrolls.
+in the example app once Task 16 exists, by dragging a card to within 60pt of
+either horizontal edge and confirming the board scrolls one column at a time
+while held there.
 
 - [ ] **Step 6: Commit**
 
