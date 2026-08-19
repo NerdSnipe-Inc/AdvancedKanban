@@ -16,19 +16,28 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
     @Binding var columns: [Column]
     let wipLimitBehavior: WIPLimitBehavior
     let onMove: ((KanbanMove<Column.Card.ID, Column.ID>) -> Void)?
+    let columnTitle: ((Column) -> String)?
     @ViewBuilder let cardContent: (Column.Card) -> CardContent
     @ViewBuilder let columnHeader: (Column) -> ColumnHeader
 
+    /// - Parameter columnTitle: Supplies a human-readable name for a column,
+    ///   used by VoiceOver ("Move to <Column Name>") and by each card's
+    ///   accessibility value. Without it the board falls back to describing
+    ///   the column by its `id`, which reads as a raw UUID for UUID-keyed
+    ///   models — pass `{ $0.title }` (or whatever your column's name
+    ///   property is) to get real names.
     public init(
         columns: Binding<[Column]>,
         wipLimitBehavior: WIPLimitBehavior = .warnOnly,
         onMove: ((KanbanMove<Column.Card.ID, Column.ID>) -> Void)? = nil,
+        columnTitle: ((Column) -> String)? = nil,
         @ViewBuilder cardContent: @escaping (Column.Card) -> CardContent,
         @ViewBuilder columnHeader: @escaping (Column) -> ColumnHeader
     ) {
         self._columns = columns
         self.wipLimitBehavior = wipLimitBehavior
         self.onMove = onMove
+        self.columnTitle = columnTitle
         self.cardContent = cardContent
         self.columnHeader = columnHeader
     }
@@ -57,23 +66,13 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
                             allColumns: columns,
                             draggedCardID: dragState.draggedCardID,
                             wipDecision: wipDecision(for: column),
+                            columnTitle: columnTitle,
                             onToggleCollapse: { toggleCollapse(columnID: column.id) },
                             cardContent: cardContent,
                             columnHeader: columnHeader,
                             cardGesture: { card in dragGesture(for: card, in: column, scrollProxy: scrollProxy) },
                             moveCard: { cardID, toColumnID, toIndex in
-                                guard let sourceColumn = columns.first(where: { $0.cards.contains(where: { $0.id == cardID }) }),
-                                      let sourceIndex = sourceColumn.cards.firstIndex(where: { $0.id == cardID }),
-                                      let move = KanbanMoveResolver.resolve(
-                                          cardID: cardID,
-                                          sourceColumnID: sourceColumn.id,
-                                          sourceIndex: sourceIndex,
-                                          destinationColumnID: toColumnID,
-                                          destinationIndex: toIndex
-                                      )
-                                else { return }
-                                applyMove(move)
-                                onMove?(move)
+                                moveCard(cardID: cardID, toColumnID: toColumnID, toIndex: toIndex)
                             }
                         )
                         .id(column.id)
@@ -116,6 +115,11 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
                     )
                 }
             }
+            // Safety net: the drag gesture's `.onEnded` normally stops the
+            // autoscroll timer, but a mid-drag teardown (navigation, sheet
+            // dismissal, scene change) never delivers `.onEnded` and would
+            // otherwise leak a repeating Timer.
+            .onDisappear { stopAutoscroll() }
         }
     }
 
@@ -124,6 +128,53 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
             return .accept
         }
         return dragState.dropDecision
+    }
+
+    /// The single WIP-limit gate. Every input method — pointer drag
+    /// (`updateWIPDecision` → `commitDrag`), keyboard move-mode, and
+    /// VoiceOver actions (both via `moveCard`) — routes its check through
+    /// here, so `.preventDrop` can never guard one path and not another.
+    private func wipDecision(
+        destinationColumn: Column,
+        isMovingWithinSameColumn: Bool
+    ) -> WIPLimitDropDecision {
+        WIPLimitEvaluator.evaluate(
+            destinationCardCount: destinationColumn.cards.count,
+            wipLimit: destinationColumn.wipLimit,
+            behavior: wipLimitBehavior,
+            isMovingWithinSameColumn: isMovingWithinSameColumn
+        )
+    }
+
+    /// The keyboard / VoiceOver move entry point. Mirrors `commitDrag`:
+    /// consult the shared WIP gate, bail out on `.reject` without mutating
+    /// or notifying, then resolve and apply.
+    ///
+    /// - Parameter toIndex: An insertion-slot index in the destination
+    ///   column, using the same pre-removal convention as
+    ///   `KanbanMoveResolver.resolve`.
+    private func moveCard(cardID: Column.Card.ID, toColumnID: Column.ID, toIndex: Int) {
+        guard let sourceColumn = columns.first(where: { $0.cards.contains(where: { $0.id == cardID }) }),
+              let sourceIndex = sourceColumn.cards.firstIndex(where: { $0.id == cardID }),
+              let destinationColumn = columns.first(where: { $0.id == toColumnID })
+        else { return }
+
+        let decision = wipDecision(
+            destinationColumn: destinationColumn,
+            isMovingWithinSameColumn: toColumnID == sourceColumn.id
+        )
+        if decision == .reject { return }
+
+        guard let move = KanbanMoveResolver.resolve(
+            cardID: cardID,
+            sourceColumnID: sourceColumn.id,
+            sourceIndex: sourceIndex,
+            destinationColumnID: toColumnID,
+            destinationIndex: toIndex
+        ) else { return }
+
+        applyMove(move)
+        onMove?(move)
     }
 
     private func toggleCollapse(columnID: Column.ID) {
@@ -202,10 +253,8 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
         guard let destinationColumnID = dragState.proposedColumnID,
               let destinationColumn = columns.first(where: { $0.id == destinationColumnID })
         else { return }
-        let decision = WIPLimitEvaluator.evaluate(
-            destinationCardCount: destinationColumn.cards.count,
-            wipLimit: destinationColumn.wipLimit,
-            behavior: wipLimitBehavior,
+        let decision = wipDecision(
+            destinationColumn: destinationColumn,
             isMovingWithinSameColumn: destinationColumnID == sourceColumn.id
         )
         dragState.setDropDecision(decision)

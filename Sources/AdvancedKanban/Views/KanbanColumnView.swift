@@ -1,26 +1,32 @@
 import SwiftUI
 
-public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHeader: View, CardGesture: Gesture>: View {
+struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHeader: View, CardGesture: Gesture>: View {
     @Environment(\.kanbanTheme) private var theme
 
     @State private var moveModeCardID: Column.Card.ID?
+    /// Where the card in move mode sat when move mode was entered, so
+    /// `Escape` can put it back (spec §8: "Escape cancels and restores
+    /// original position").
+    @State private var moveModeOrigin: (columnID: Column.ID, index: Int)?
     @FocusState private var focusedCardID: Column.Card.ID?
 
     let column: Column
     let allColumns: [Column]
     let draggedCardID: Column.Card.ID?
     let wipDecision: WIPLimitDropDecision
+    let columnTitle: ((Column) -> String)?
     let onToggleCollapse: () -> Void
     @ViewBuilder let cardContent: (Column.Card) -> CardContent
     @ViewBuilder let columnHeader: (Column) -> ColumnHeader
     let cardGesture: (Column.Card) -> CardGesture
     let moveCard: (_ cardID: Column.Card.ID, _ toColumnID: Column.ID, _ toIndex: Int) -> Void
 
-    public init(
+    init(
         column: Column,
         allColumns: [Column],
         draggedCardID: Column.Card.ID?,
         wipDecision: WIPLimitDropDecision,
+        columnTitle: ((Column) -> String)? = nil,
         onToggleCollapse: @escaping () -> Void,
         @ViewBuilder cardContent: @escaping (Column.Card) -> CardContent,
         @ViewBuilder columnHeader: @escaping (Column) -> ColumnHeader,
@@ -31,6 +37,7 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
         self.allColumns = allColumns
         self.draggedCardID = draggedCardID
         self.wipDecision = wipDecision
+        self.columnTitle = columnTitle
         self.onToggleCollapse = onToggleCollapse
         self.cardContent = cardContent
         self.columnHeader = columnHeader
@@ -42,7 +49,7 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
         wipDecision == .acceptWithWarning
     }
 
-    public var body: some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
             if !column.isCollapsed {
@@ -101,7 +108,10 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                         }
                         .accessibilityAction(named: "Move Down") {
                             guard index < column.cards.count - 1 else { return }
-                            moveCard(card.id, column.id, index + 1)
+                            // `moveCard` takes an insertion *slot* (pre-removal);
+                            // slot `index + 1` is the one this card already
+                            // occupies, so moving one position down is `index + 2`.
+                            moveCard(card.id, column.id, index + 2)
                         }
                         .accessibilityActions {
                             ForEach(allColumns.filter { $0.id != column.id }) { otherColumn in
@@ -117,20 +127,20 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                                 .strokeBorder(theme.wipLimitWarningColor, lineWidth: moveModeCardID == card.id ? 2 : 0)
                         )
                         .onKeyPress(.space) {
-                            toggleMoveMode(for: card.id)
+                            toggleMoveMode(for: card.id, at: index)
                             return .handled
                         }
                         .onKeyPress(.return) {
                             if moveModeCardID == card.id {
-                                moveModeCardID = nil
+                                exitMoveMode()
                                 return .handled
                             }
-                            toggleMoveMode(for: card.id)
+                            toggleMoveMode(for: card.id, at: index)
                             return .handled
                         }
                         .onKeyPress(.escape) {
                             guard moveModeCardID == card.id else { return .ignored }
-                            moveModeCardID = nil
+                            cancelMoveMode(for: card.id, currentIndex: index)
                             return .handled
                         }
                         .onKeyPress(.upArrow) {
@@ -140,19 +150,21 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                         }
                         .onKeyPress(.downArrow) {
                             guard moveModeCardID == card.id, index < column.cards.count - 1 else { return .ignored }
-                            moveCard(card.id, column.id, index + 1)
+                            // Insertion-slot convention: `index + 1` is this
+                            // card's own slot, so one position down is `index + 2`.
+                            moveCard(card.id, column.id, index + 2)
                             return .handled
                         }
                         .onKeyPress(.leftArrow) {
                             guard moveModeCardID == card.id, let previousColumn = column(before: column) else { return .ignored }
                             moveCard(card.id, previousColumn.id, previousColumn.cards.count)
-                            moveModeCardID = nil
+                            exitMoveMode()
                             return .handled
                         }
                         .onKeyPress(.rightArrow) {
                             guard moveModeCardID == card.id, let nextColumn = column(after: column) else { return .ignored }
                             moveCard(card.id, nextColumn.id, nextColumn.cards.count)
-                            moveModeCardID = nil
+                            exitMoveMode()
                             return .handled
                         }
                     }
@@ -175,11 +187,40 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
     }
 
     private func accessibilityTitle(for column: Column) -> String {
-        "column \(String(describing: column.id))"
+        if let columnTitle {
+            return columnTitle(column)
+        }
+        return "column \(String(describing: column.id))"
     }
 
-    private func toggleMoveMode(for cardID: Column.Card.ID) {
-        moveModeCardID = (moveModeCardID == cardID) ? nil : cardID
+    private func toggleMoveMode(for cardID: Column.Card.ID, at index: Int) {
+        if moveModeCardID == cardID {
+            exitMoveMode()
+        } else {
+            moveModeCardID = cardID
+            moveModeOrigin = (columnID: column.id, index: index)
+        }
+    }
+
+    /// Leaves move mode, keeping whatever position the card has reached
+    /// (`Return` commits; a cross-column arrow also ends the session).
+    private func exitMoveMode() {
+        moveModeCardID = nil
+        moveModeOrigin = nil
+    }
+
+    /// Leaves move mode and puts the card back where it started.
+    private func cancelMoveMode(for cardID: Column.Card.ID, currentIndex: Int) {
+        if let origin = moveModeOrigin,
+           origin.columnID != column.id || origin.index != currentIndex {
+            // `moveCard` takes an insertion slot measured before removal, so
+            // a restore that moves the card *forward* needs origin.index + 1.
+            let slot = (origin.columnID == column.id && origin.index > currentIndex)
+                ? origin.index + 1
+                : origin.index
+            moveCard(cardID, origin.columnID, slot)
+        }
+        exitMoveMode()
     }
 
     private func column(before target: Column) -> Column? {

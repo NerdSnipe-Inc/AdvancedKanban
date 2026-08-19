@@ -1,6 +1,15 @@
 import Testing
 @testable import AdvancedKanban
 
+/// NOTE (wiring, not logic): the evaluator below was always correct — the
+/// shipped bug was that only the pointer-drag path consulted it, so keyboard
+/// and VoiceOver moves bypassed `.preventDrop` entirely. That seam lives in
+/// `KanbanBoard.swift` on a generic SwiftUI `View`, so it isn't unit-testable
+/// here; it is enforced structurally instead. `KanbanBoard` has exactly one
+/// WIP gate — `wipDecision(destinationColumn:isMovingWithinSameColumn:)` —
+/// and both `updateWIPDecision` (pointer drag) and `moveCard` (keyboard +
+/// VoiceOver) call it, each bailing out on `.reject` before `applyMove`.
+/// If you add a fourth input path, route it through that helper too.
 @Suite struct WIPLimitEvaluatorTests {
     @Test func noLimitAlwaysAccepts() {
         let decision = WIPLimitEvaluator.evaluate(
