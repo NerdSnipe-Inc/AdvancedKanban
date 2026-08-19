@@ -1,5 +1,11 @@
 # AdvancedKanban
 
+[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager)
+[![Swift 5.9+](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)](Package.swift)
+[![Platforms](https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B%20%7C%20macOS%2014%2B-blue)](Package.swift)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/NerdSnipe-Inc/AdvancedKanban)](https://github.com/NerdSnipe-Inc/AdvancedKanban/releases)
+
 A Kanban board component for SwiftUI on iOS, iPadOS, and macOS. You bring
 your own model types and your own card UI; AdvancedKanban brings the board
 mechanics — cross-column pointer drag with autoscroll, a full keyboard
