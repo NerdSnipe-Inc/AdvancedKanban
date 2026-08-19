@@ -12,6 +12,7 @@ enum KanbanCoordinateSpace {
 /// can hit-test against it.
 struct KanbanCardView<Card: KanbanCard, Content: View>: View {
     @Environment(\.kanbanTheme) private var theme
+    @State private var isHovering = false
 
     let card: Card
     let columnID: AnyHashable
@@ -34,6 +35,18 @@ struct KanbanCardView<Card: KanbanCard, Content: View>: View {
     }
 
     var body: some View {
+        chrome
+            .onHover { hovering in
+                isHovering = hovering
+            }
+            #if os(iOS)
+            // iPadOS pointer users get the system-native highlight treatment.
+            .hoverEffect(.highlight)
+            #endif
+            .withGrabCursor(isHovering: isHovering, isDragging: isBeingDragged)
+    }
+
+    private var chrome: some View {
         content(card)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -41,8 +54,29 @@ struct KanbanCardView<Card: KanbanCard, Content: View>: View {
             .clipShape(RoundedRectangle(cornerRadius: theme.cardCornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: theme.cardCornerRadius)
-                    .strokeBorder(isOverWIPWarning ? theme.wipLimitWarningColor : theme.cardBorder, lineWidth: isOverWIPWarning ? 2 : 1)
+                    .strokeBorder(
+                        isOverWIPWarning ? theme.wipLimitWarningColor : theme.cardBorder,
+                        lineWidth: isOverWIPWarning ? 2 : (isHovering && !isBeingDragged ? 1.5 : 1)
+                    )
             )
+            // Cross-platform "lift" affordance for pointer/trackpad users
+            // (mouse on macOS, trackpad-connected iPad) — touch input never
+            // triggers onHover, so this is purely additive there.
+            //
+            // Brightness is the primary cue: it's visible against any
+            // theme's card background, light or dark. The border-width bump
+            // above is the second, theme-agnostic cue. The shadow is a
+            // light-mode-oriented flourish on top — a black shadow reads
+            // clearly against a light card but all but disappears against a
+            // dark one, so it must never be the *only* affordance.
+            .brightness(isHovering && !isBeingDragged ? 0.04 : 0)
+            .scaleEffect(isHovering && !isBeingDragged ? 1.02 : 1)
+            .shadow(
+                color: .black.opacity(isHovering && !isBeingDragged ? 0.15 : 0),
+                radius: isHovering && !isBeingDragged ? 6 : 0,
+                y: isHovering && !isBeingDragged ? 2 : 0
+            )
+            .animation(.easeOut(duration: 0.12), value: isHovering)
             .opacity(isBeingDragged ? 0 : 1) // real card hides; ghost overlay stands in
             .background(
                 GeometryReader { proxy in
@@ -52,5 +86,24 @@ struct KanbanCardView<Card: KanbanCard, Content: View>: View {
                     )
                 }
             )
+    }
+}
+
+private extension View {
+    /// Shows an open-hand cursor on hover and a closed-hand cursor while
+    /// actively dragging, on macOS 15+. `PointerStyle` doesn't exist prior
+    /// to macOS 15 — gated as a progressive enhancement rather than raising
+    /// the package's platform floor for a cursor affordance alone.
+    @ViewBuilder
+    func withGrabCursor(isHovering: Bool, isDragging: Bool) -> some View {
+        #if os(macOS)
+        if #available(macOS 15, *) {
+            pointerStyle(isDragging ? .grabActive : (isHovering ? .grabIdle : nil))
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
     }
 }

@@ -225,8 +225,22 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
         lastAutoscrollTargetColumnID = nil
     }
 
+    /// SwiftUI's `DragGesture` default (10pt) is tuned for touch, where a
+    /// looser threshold avoids hijacking accidental finger movement as a
+    /// drag. A precise pointing device (mouse/trackpad) wants a much
+    /// tighter threshold so drags register crisply — leaving this at the
+    /// touch default on macOS makes the board feel touch-ported rather
+    /// than pointer-native.
+    private static var dragMinimumDistance: CGFloat {
+        #if os(macOS)
+        2
+        #else
+        10
+        #endif
+    }
+
     private func dragGesture(for card: Column.Card, in column: Column, scrollProxy: ScrollViewProxy) -> some Gesture {
-        DragGesture(coordinateSpace: .named(KanbanCoordinateSpace.name))
+        DragGesture(minimumDistance: Self.dragMinimumDistance, coordinateSpace: .named(KanbanCoordinateSpace.name))
             .onChanged { value in
                 if dragState.draggedCardID == nil {
                     dragState.beginDrag(cardID: card.id)
