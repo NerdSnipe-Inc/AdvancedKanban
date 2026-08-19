@@ -89,7 +89,14 @@ yourself.
   edges.
 - **Keyboard move-mode** — Tab to focus a card, Space to enter move mode,
   arrow keys to move within or across columns, Return to commit, Escape to
-  cancel. No mouse required.
+  cancel and restore the card's original position. No mouse required.
+- **Native pointer support on macOS** — cards respond to hover with a
+  theme-agnostic highlight (visible in light and dark themes alike) and a
+  grab/grabbing cursor (macOS 15+, gracefully absent on 14), and the drag
+  gesture's activation threshold is tuned per platform — tight for a
+  precise pointer (mouse/trackpad), the standard looser threshold for
+  touch. The board is built to be embedded in real, native Mac apps, not
+  just tolerated on one.
 - **VoiceOver parity** — every drag interaction has an equivalent
   accessibility action (Move Up / Move Down / Move to \<Column\>) exposed
   through the rotor, so VoiceOver users get the same reordering power as
@@ -148,7 +155,14 @@ A runnable example lives in [`Example/`](Example/README.md). It demonstrates
 cross-column drag with a WIP limit, custom card content, theme switching,
 column collapse, keyboard reorder, and VoiceOver reorder — open
 `Example/AdvancedKanbanExample.xcodeproj` in Xcode and run it on macOS or an
-iOS/iPadOS simulator.
+iOS/iPadOS simulator. Every view in the example also ships a `#Preview`, so
+you can inspect each theme/state combination directly in Xcode's canvas
+without running the app.
+
+Two Xcode schemes are checked into the project — `AdvancedKanbanExample
+(macOS)` and `AdvancedKanbanExample (iOS)` — so opening the project gives a
+predictable, resizable native window on whichever platform you pick, rather
+than leaving Xcode to auto-select one.
 
 ## Design spec
 
@@ -164,8 +178,7 @@ Swift Package Manager, via Xcode (File > Add Package Dependencies) or
 
 ```swift
 dependencies: [
-    // Placeholder URL — update this once the package has a real GitHub remote.
-    .package(url: "https://github.com/<org>/AdvancedKanban", from: "1.0.0")
+    .package(url: "https://github.com/NerdSnipe-Inc/AdvancedKanban.git", from: "1.0.0")
 ]
 ```
 
