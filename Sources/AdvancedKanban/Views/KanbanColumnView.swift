@@ -4,29 +4,35 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
     @Environment(\.kanbanTheme) private var theme
 
     let column: Column
+    let allColumns: [Column]
     let draggedCardID: Column.Card.ID?
     let wipDecision: WIPLimitDropDecision
     let onToggleCollapse: () -> Void
     @ViewBuilder let cardContent: (Column.Card) -> CardContent
     @ViewBuilder let columnHeader: (Column) -> ColumnHeader
     let cardGesture: (Column.Card) -> CardGesture
+    let moveCard: (_ cardID: Column.Card.ID, _ toColumnID: Column.ID, _ toIndex: Int) -> Void
 
     public init(
         column: Column,
+        allColumns: [Column],
         draggedCardID: Column.Card.ID?,
         wipDecision: WIPLimitDropDecision,
         onToggleCollapse: @escaping () -> Void,
         @ViewBuilder cardContent: @escaping (Column.Card) -> CardContent,
         @ViewBuilder columnHeader: @escaping (Column) -> ColumnHeader,
-        cardGesture: @escaping (Column.Card) -> CardGesture
+        cardGesture: @escaping (Column.Card) -> CardGesture,
+        moveCard: @escaping (_ cardID: Column.Card.ID, _ toColumnID: Column.ID, _ toIndex: Int) -> Void
     ) {
         self.column = column
+        self.allColumns = allColumns
         self.draggedCardID = draggedCardID
         self.wipDecision = wipDecision
         self.onToggleCollapse = onToggleCollapse
         self.cardContent = cardContent
         self.columnHeader = columnHeader
         self.cardGesture = cardGesture
+        self.moveCard = moveCard
     }
 
     private var isOverWIPWarning: Bool {
@@ -75,7 +81,7 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                 if column.cards.isEmpty {
                     emptyDropZonePlaceholder
                 } else {
-                    ForEach(column.cards) { card in
+                    ForEach(Array(column.cards.enumerated()), id: \.element.id) { index, card in
                         KanbanCardView(
                             card: card,
                             columnID: AnyHashable(column.id),
@@ -84,6 +90,23 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                             content: cardContent
                         )
                         .gesture(cardGesture(card))
+                        .accessibilityElement(children: .combine)
+                        .accessibilityValue("\(index + 1) of \(column.cards.count) in \(accessibilityColumnTitle)")
+                        .accessibilityAction(named: "Move Up") {
+                            guard index > 0 else { return }
+                            moveCard(card.id, column.id, index - 1)
+                        }
+                        .accessibilityAction(named: "Move Down") {
+                            guard index < column.cards.count - 1 else { return }
+                            moveCard(card.id, column.id, index + 1)
+                        }
+                        .accessibilityActions {
+                            ForEach(allColumns.filter { $0.id != column.id }) { otherColumn in
+                                Button("Move to \(accessibilityTitle(for: otherColumn))") {
+                                    moveCard(card.id, otherColumn.id, otherColumn.cards.count)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -97,6 +120,14 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
                 )
             }
         )
+    }
+
+    private var accessibilityColumnTitle: String {
+        accessibilityTitle(for: column)
+    }
+
+    private func accessibilityTitle(for column: Column) -> String {
+        "column \(String(describing: column.id))"
     }
 
     /// Keeps an empty column a valid, reachable drop target — without this,

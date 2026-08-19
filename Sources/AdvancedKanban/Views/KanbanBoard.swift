@@ -54,12 +54,27 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
                     ForEach(columns) { column in
                         KanbanColumnView(
                             column: column,
+                            allColumns: columns,
                             draggedCardID: dragState.draggedCardID,
                             wipDecision: wipDecision(for: column),
                             onToggleCollapse: { toggleCollapse(columnID: column.id) },
                             cardContent: cardContent,
                             columnHeader: columnHeader,
-                            cardGesture: { card in dragGesture(for: card, in: column, scrollProxy: scrollProxy) }
+                            cardGesture: { card in dragGesture(for: card, in: column, scrollProxy: scrollProxy) },
+                            moveCard: { cardID, toColumnID, toIndex in
+                                guard let sourceColumn = columns.first(where: { $0.cards.contains(where: { $0.id == cardID }) }),
+                                      let sourceIndex = sourceColumn.cards.firstIndex(where: { $0.id == cardID }),
+                                      let move = KanbanMoveResolver.resolve(
+                                          cardID: cardID,
+                                          sourceColumnID: sourceColumn.id,
+                                          sourceIndex: sourceIndex,
+                                          destinationColumnID: toColumnID,
+                                          destinationIndex: toIndex
+                                      )
+                                else { return }
+                                applyMove(move)
+                                onMove?(move)
+                            }
                         )
                         .id(column.id)
                     }
