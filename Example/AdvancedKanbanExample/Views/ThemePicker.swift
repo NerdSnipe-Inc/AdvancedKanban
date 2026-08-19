@@ -51,3 +51,9 @@ struct ThemePicker: View {
         .padding(.horizontal)
     }
 }
+
+#Preview {
+    @Previewable @State var selection: ExampleTheme = .standard
+    ThemePicker(selection: $selection)
+        .padding(.vertical)
+}

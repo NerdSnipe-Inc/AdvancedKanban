@@ -29,3 +29,13 @@ struct BoardScreen: View {
         .padding(.top)
     }
 }
+
+#Preview("Light") {
+    BoardScreen()
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark") {
+    BoardScreen()
+        .preferredColorScheme(.dark)
+}

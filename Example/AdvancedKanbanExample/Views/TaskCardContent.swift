@@ -35,3 +35,36 @@ struct TaskCardContent: View {
         }
     }
 }
+
+#Preview("Low priority", traits: .sizeThatFitsLayout) {
+    TaskCardContent(
+        task: ExampleTask(id: UUID(), title: "Research competitor apps", assigneeInitials: "AS", priority: .low)
+    )
+    .padding()
+}
+
+#Preview("Medium priority", traits: .sizeThatFitsLayout) {
+    TaskCardContent(
+        task: ExampleTask(id: UUID(), title: "Design onboarding flow", assigneeInitials: "JD", priority: .medium)
+    )
+    .padding()
+}
+
+#Preview("High priority, long title", traits: .sizeThatFitsLayout) {
+    TaskCardContent(
+        task: ExampleTask(id: UUID(), title: "Investigate the intermittent WebSocket disconnects on cellular", assigneeInitials: "JD", priority: .high)
+    )
+    .padding()
+}
+
+// High Contrast pairs a white card with an explicit black title — this preview
+// exists specifically to catch the invisible-text regression class of bug
+// (see git history: this exact mistake shipped once already).
+#Preview("High Contrast card", traits: .sizeThatFitsLayout) {
+    TaskCardContent(
+        task: ExampleTask(id: UUID(), title: "Build KanbanBoard view", assigneeInitials: "JD", priority: .high),
+        titleColor: .black
+    )
+    .padding()
+    .background(Color.white)
+}
