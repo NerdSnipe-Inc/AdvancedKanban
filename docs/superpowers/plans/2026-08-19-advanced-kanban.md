@@ -817,7 +817,7 @@ git commit -m "Add KanbanAutoscrollCalculator edge-band speed ramp"
 
 **Interfaces:**
 - Consumes: `KanbanCardFrame`, `KanbanColumnZone`, `KanbanInsertionResolver` (Task 3).
-- Produces: `KanbanFrame<CardID: Hashable, ColumnID: Hashable>` enum (`.card(id, CGRect)`, `.columnZone(id, CGRect)`), `KanbanFramePreferenceKey<CardID, ColumnID>: PreferenceKey`, `@Observable final class KanbanDragState<CardID: Hashable, ColumnID: Hashable>` with `draggedCardID: CardID?` (read-only outside), `proposedColumnID: ColumnID?`, `proposedIndex: Int?`, methods `beginDrag(cardID:)`, `updatePointer(location:cardFrames:columnZones:cardColumns:cardOrder:)`, `endDrag()`.
+- Produces: `KanbanFrame` enum (non-generic, `AnyHashable` ids — `.card(AnyHashable, CGRect)`, `.columnZone(AnyHashable, CGRect)`), `KanbanFramePreferenceKey: PreferenceKey` (also non-generic — see the note in Step 3 on why this must not be parameterized), `@Observable final class KanbanDragState<CardID: Hashable, ColumnID: Hashable>` with `draggedCardID: CardID?` (read-only outside), `proposedColumnID: ColumnID?`, `proposedIndex: Int?`, methods `beginDrag(cardID:)`, `updatePointer(location:cardFrames:columnZones:cardColumns:cardOrder:)`, `endDrag()`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -876,20 +876,31 @@ import CoreGraphics
 import SwiftUI
 
 /// One card's or one column's reported frame in the board's named
-/// coordinate space (`KanbanBoard.coordinateSpaceName`).
-public enum KanbanFrame<CardID: Hashable, ColumnID: Hashable>: Equatable {
-    case card(CardID, CGRect)
-    case columnZone(ColumnID, CGRect)
+/// coordinate space (`KanbanCoordinateSpace.name`).
+///
+/// IDs are type-erased to `AnyHashable` here deliberately: `KanbanCardView`
+/// only knows its `Card` type, not the enclosing `Column` type's ID, so it
+/// cannot parameterize a generic preference key with `Column.ID`. Every
+/// reporter (`KanbanCardView`, `KanbanColumnView`) and the single listener
+/// (`KanbanBoard`) must therefore share this exact non-generic type —
+/// SwiftUI merges preference values by `PreferenceKey` type, so two
+/// differently-parameterized generic instantiations would silently never
+/// merge. `KanbanBoard`, which knows the concrete `Column`/`Card` types,
+/// casts `AnyHashable.base` back to the concrete ID types when it consumes
+/// this (see Task 11).
+public enum KanbanFrame: Equatable {
+    case card(AnyHashable, CGRect)
+    case columnZone(AnyHashable, CGRect)
 }
 
 /// Merges every card's and column's frame report up to `KanbanBoard`,
 /// which uses them to drive `KanbanDragState.updatePointer`.
-public struct KanbanFramePreferenceKey<CardID: Hashable, ColumnID: Hashable>: PreferenceKey {
-    public static var defaultValue: [KanbanFrame<CardID, ColumnID>] { [] }
+public struct KanbanFramePreferenceKey: PreferenceKey {
+    public static var defaultValue: [KanbanFrame] { [] }
 
     public static func reduce(
-        value: inout [KanbanFrame<CardID, ColumnID>],
-        nextValue: () -> [KanbanFrame<CardID, ColumnID>]
+        value: inout [KanbanFrame],
+        nextValue: () -> [KanbanFrame]
     ) {
         value.append(contentsOf: nextValue())
     }
@@ -1182,8 +1193,8 @@ public struct KanbanCardView<Card: KanbanCard, Content: View>: View {
             .background(
                 GeometryReader { proxy in
                     Color.clear.preference(
-                        key: KanbanFramePreferenceKey<Card.ID, AnyHashable>.self,
-                        value: [.card(card.id, proxy.frame(in: .named(KanbanBoard<Never, Never, Never>.coordinateSpaceName)))]
+                        key: KanbanFramePreferenceKey.self,
+                        value: [.card(AnyHashable(card.id), proxy.frame(in: .named(KanbanCoordinateSpace.name)))]
                     )
                 }
             )
@@ -1191,13 +1202,8 @@ public struct KanbanCardView<Card: KanbanCard, Content: View>: View {
 }
 ```
 
-Note: the `KanbanBoard<Never, Never, Never>.coordinateSpaceName` reference
-above is a forward reference used only to get the *name string* — replace it
-with a plain `static let coordinateSpaceName = "AdvancedKanban.board"`
-constant defined once at package scope (not nested in the generic
-`KanbanBoard` type, since referencing a generic type just for a constant is
-exactly the kind of self-inflicted complexity to avoid). Add this to
-`KanbanCardView.swift` above the struct:
+Add this to `KanbanCardView.swift` above the struct — the single shared
+named coordinate space used by every reporter and by `KanbanBoard`:
 
 ```swift
 /// Shared named coordinate space for all frame reporting/hit-testing across
@@ -1369,8 +1375,8 @@ public struct KanbanColumnView<Column: KanbanColumn, CardContent: View, ColumnHe
         .background(
             GeometryReader { proxy in
                 Color.clear.preference(
-                    key: KanbanFramePreferenceKey<Column.Card.ID, Column.ID>.self,
-                    value: [.columnZone(column.id, proxy.frame(in: .named(KanbanCoordinateSpace.name)))]
+                    key: KanbanFramePreferenceKey.self,
+                    value: [.columnZone(AnyHashable(column.id), proxy.frame(in: .named(KanbanCoordinateSpace.name)))]
                 )
             }
         )
@@ -1506,13 +1512,21 @@ public struct KanbanBoard<Column: KanbanColumn, CardContent: View, ColumnHeader:
             .padding(theme.cardSpacing * 2)
         }
         .coordinateSpace(name: KanbanCoordinateSpace.name)
-        .onPreferenceChange(KanbanFramePreferenceKey<Column.Card.ID, Column.ID>.self) { frames in
+        .onPreferenceChange(KanbanFramePreferenceKey.self) { frames in
+            // KanbanFramePreferenceKey carries type-erased AnyHashable ids
+            // (see Task 7) because KanbanCardView doesn't know Column.ID.
+            // KanbanBoard is the one place that knows the concrete types,
+            // so it casts back here.
             cardFrames = frames.compactMap { frame in
-                if case let .card(id, rect) = frame { return KanbanCardFrame(cardID: id, frame: rect) }
+                if case let .card(id, rect) = frame, let cardID = id.base as? Column.Card.ID {
+                    return KanbanCardFrame(cardID: cardID, frame: rect)
+                }
                 return nil
             }
             columnZones = frames.compactMap { frame in
-                if case let .columnZone(id, rect) = frame { return KanbanColumnZone(columnID: id, frame: rect) }
+                if case let .columnZone(id, rect) = frame, let columnID = id.base as? Column.ID {
+                    return KanbanColumnZone(columnID: columnID, frame: rect)
+                }
                 return nil
             }
         }
