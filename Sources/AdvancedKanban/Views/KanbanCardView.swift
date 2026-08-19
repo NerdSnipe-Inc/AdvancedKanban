@@ -10,7 +10,7 @@ enum KanbanCoordinateSpace {
 /// drag/WIP-warning state styling) around consumer-supplied content, and
 /// reports its own frame via `KanbanFramePreferenceKey` so the drag engine
 /// can hit-test against it.
-public struct KanbanCardView<Card: KanbanCard, Content: View>: View {
+struct KanbanCardView<Card: KanbanCard, Content: View>: View {
     @Environment(\.kanbanTheme) private var theme
 
     let card: Card
@@ -19,7 +19,7 @@ public struct KanbanCardView<Card: KanbanCard, Content: View>: View {
     let isOverWIPWarning: Bool
     @ViewBuilder let content: (Card) -> Content
 
-    public init(
+    init(
         card: Card,
         columnID: AnyHashable,
         isBeingDragged: Bool,
@@ -33,7 +33,7 @@ public struct KanbanCardView<Card: KanbanCard, Content: View>: View {
         self.content = content
     }
 
-    public var body: some View {
+    var body: some View {
         content(card)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -14,17 +14,17 @@ import SwiftUI
 /// merge. `KanbanBoard`, which knows the concrete `Column`/`Card` types,
 /// casts `AnyHashable.base` back to the concrete ID types when it consumes
 /// this (see Task 11).
-public enum KanbanFrame: Equatable {
+enum KanbanFrame: Equatable {
     case card(AnyHashable, CGRect)
     case columnZone(AnyHashable, CGRect)
 }
 
 /// Merges every card's and column's frame report up to `KanbanBoard`,
 /// which uses them to drive `KanbanDragState.updatePointer`.
-public struct KanbanFramePreferenceKey: PreferenceKey {
-    public static var defaultValue: [KanbanFrame] { [] }
+struct KanbanFramePreferenceKey: PreferenceKey {
+    static var defaultValue: [KanbanFrame] { [] }
 
-    public static func reduce(
+    static func reduce(
         value: inout [KanbanFrame],
         nextValue: () -> [KanbanFrame]
     ) {

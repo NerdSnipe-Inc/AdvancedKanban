@@ -2,13 +2,13 @@ import CoreGraphics
 
 /// Resolves which column and index a dragged card should land at, given the
 /// pointer's current location in the board's coordinate space.
-public enum KanbanInsertionResolver {
+enum KanbanInsertionResolver {
     /// Uses each card's frame **midpoint** — not its edge — as the crossing
     /// threshold. Comparing against the edge causes the insertion index to
     /// flicker as the pointer hovers near a card boundary; the midpoint
     /// comparison is stable because the pointer has to cross half the card's
     /// height before the index changes.
-    public static func resolve<CardID: Hashable, ColumnID: Hashable>(
+    static func resolve<CardID: Hashable, ColumnID: Hashable>(
         pointerLocation: CGPoint,
         cardFrames: [KanbanCardFrame<CardID>],
         columnZones: [KanbanColumnZone<ColumnID>],

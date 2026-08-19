@@ -5,20 +5,20 @@ import Observation
 /// `View` — so `KanbanDragStateTests` exercises it without hosting any view
 /// hierarchy.
 @Observable
-public final class KanbanDragState<CardID: Hashable, ColumnID: Hashable> {
-    public private(set) var draggedCardID: CardID?
-    public private(set) var pointerLocation: CGPoint = .zero
-    public private(set) var proposedColumnID: ColumnID?
-    public private(set) var proposedIndex: Int?
-    public private(set) var dropDecision: WIPLimitDropDecision = .accept
+final class KanbanDragState<CardID: Hashable, ColumnID: Hashable> {
+    private(set) var draggedCardID: CardID?
+    private(set) var pointerLocation: CGPoint = .zero
+    private(set) var proposedColumnID: ColumnID?
+    private(set) var proposedIndex: Int?
+    private(set) var dropDecision: WIPLimitDropDecision = .accept
 
-    public init() {}
+    init() {}
 
-    public func beginDrag(cardID: CardID) {
+    func beginDrag(cardID: CardID) {
         draggedCardID = cardID
     }
 
-    public func updatePointer(
+    func updatePointer(
         location: CGPoint,
         cardFrames: [KanbanCardFrame<CardID>],
         columnZones: [KanbanColumnZone<ColumnID>],
@@ -39,11 +39,11 @@ public final class KanbanDragState<CardID: Hashable, ColumnID: Hashable> {
         proposedIndex = resolved.index
     }
 
-    public func setDropDecision(_ decision: WIPLimitDropDecision) {
+    func setDropDecision(_ decision: WIPLimitDropDecision) {
         dropDecision = decision
     }
 
-    public func endDrag() {
+    func endDrag() {
         draggedCardID = nil
         pointerLocation = .zero
         proposedColumnID = nil

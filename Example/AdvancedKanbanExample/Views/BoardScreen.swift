@@ -18,6 +18,7 @@ struct BoardScreen: View {
                 onMove: { move in
                     lastMoveDescription = "Moved \(move.cardID) to column \(move.destinationColumnID) at index \(move.destinationIndex)"
                 },
+                columnTitle: { $0.title },
                 cardContent: { task in TaskCardContent(task: task) },
                 columnHeader: { column in
                     Text(column.title).font(.headline)

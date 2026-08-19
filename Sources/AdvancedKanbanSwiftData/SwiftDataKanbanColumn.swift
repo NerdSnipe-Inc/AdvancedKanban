@@ -23,6 +23,15 @@ public final class SwiftDataKanbanColumn {
 extension SwiftDataKanbanColumn: KanbanColumn {
     public var cards: [SwiftDataKanbanCard] {
         get { cardModels.sorted { $0.sortIndex < $1.sortIndex } }
-        set { cardModels = newValue }
+        set {
+            cardModels = newValue
+            // The getter sorts by `sortIndex`, so assigning a reordered array
+            // without renumbering would be silently undone on the next read.
+            // `KanbanBoard.applyMove` mutates through exactly this setter, so
+            // renumber here — same pattern as `KanbanStore.apply`.
+            for (index, card) in newValue.enumerated() {
+                card.sortIndex = index
+            }
+        }
     }
 }

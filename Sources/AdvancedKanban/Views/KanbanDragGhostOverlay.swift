@@ -4,20 +4,20 @@ import SwiftUI
 /// gesture's live translation. Rendered as a plain overlay (not a system
 /// drag preview), which is also what avoids the macOS native-drag-preview
 /// rendering bug noted in the design spec.
-public struct KanbanDragGhostOverlay<Content: View>: View {
+struct KanbanDragGhostOverlay<Content: View>: View {
     @Environment(\.kanbanTheme) private var theme
 
     let content: Content
     let position: CGPoint
     let size: CGSize
 
-    public init(content: Content, position: CGPoint, size: CGSize) {
+    init(content: Content, position: CGPoint, size: CGSize) {
         self.content = content
         self.position = position
         self.size = size
     }
 
-    public var body: some View {
+    var body: some View {
         content
             .padding(12)
             .frame(width: size.width, height: size.height, alignment: .leading)
